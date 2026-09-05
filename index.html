@@ -27,7 +27,7 @@
   .wrap { max-width:480px; margin:0 auto; padding:16px 16px 64px; }
   @media (min-width:768px) { .wrap { max-width:640px; padding-top:32px; } }
   .hidden { display:none !important; }
-  .brand { font-weight:700; font-size:15px; color:var(--navy); margin:4px 0 14px; letter-spacing:.01em; }
+  .brand { display:block; height:36px; width:auto; margin:6px 0 16px; }
   .card { background:var(--paper); border-radius:16px; box-shadow:var(--shadow); padding:20px; margin-bottom:16px; }
   h1 { font-size:24px; font-weight:700; line-height:1.25; margin:0 0 6px; overflow-wrap:anywhere; }
   h2 { font-size:16px; font-weight:700; margin:0 0 12px; }
@@ -81,7 +81,7 @@
 </head>
 <body>
 <div class="wrap">
-  <div class="brand">いつなら？</div>
+  <img class="brand" src="./wordmark.png" alt="いつなら？">
 
   <div id="closedBox" class="card closed hidden">この調整は終了しました</div>
 
