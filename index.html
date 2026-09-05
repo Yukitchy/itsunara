@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+<meta name="theme-color" content="#0b3558">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="いつなら？">
+<title>いつなら？</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  /* Calendly design system (Refero) : Ink Navy / Signal Blue / Cloud / Pebble / Hairline */
+  :root {
+    --navy:#0b3558; --blue:#006bff; --slate:#476788; --mist:#a6bbd1;
+    --cloud:#f8f9fb; --paper:#ffffff; --pebble:#f0f3f8; --hair:#d4e0ed; --sky:#e6f0ff; --cobalt:#004eba;
+    --shadow: rgba(71,103,136,0.04) 0 4px 5px, rgba(71,103,136,0.03) 0 8px 15px, rgba(71,103,136,0.08) 0 30px 50px;
+  }
+  * { box-sizing:border-box; }
+  html, body { overflow-x:hidden; }
+  body { margin:0; background:var(--cloud); color:var(--navy); font-family:"Manrope","Zen Kaku Gothic New",system-ui,-apple-system,sans-serif; font-weight:500; line-height:1.5; -webkit-text-size-adjust:100%; }
+  .wrap { max-width:480px; margin:0 auto; padding:16px 16px 64px; }
+  @media (min-width:768px) { .wrap { max-width:640px; padding-top:32px; } }
+  .hidden { display:none !important; }
+  .brand { font-weight:700; font-size:15px; color:var(--navy); margin:4px 0 14px; letter-spacing:.01em; }
+  .card { background:var(--paper); border-radius:16px; box-shadow:var(--shadow); padding:20px; margin-bottom:16px; }
+  h1 { font-size:24px; font-weight:700; line-height:1.25; margin:0 0 6px; overflow-wrap:anywhere; }
+  h2 { font-size:16px; font-weight:700; margin:0 0 12px; }
+  .meta { color:var(--slate); font-size:14px; }
+  .sub { color:var(--slate); font-size:14px; }
+
+  .names { display:flex; flex-wrap:wrap; gap:8px; }
+  .names button { min-height:48px; padding:0 16px; border:1px solid var(--blue); border-radius:8px; background:#fff; color:var(--blue); font:inherit; font-weight:600; font-size:15px; cursor:pointer; }
+  .names button.sel { background:var(--navy); border-color:var(--navy); color:#fff; }
+
+  .slot { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 0; border-top:1px solid var(--hair); }
+  .slot:first-child { border-top:none; padding-top:0; }
+  .slot .lab { font-weight:700; font-size:15px; line-height:1.3; }
+  .slot .lab small { display:block; font-weight:500; font-size:13px; color:var(--slate); }
+  .seg { display:flex; gap:6px; flex:none; }
+  .seg button { width:48px; height:44px; border:1px solid var(--hair); border-radius:8px; background:#fff; color:var(--mist); font:inherit; font-weight:700; font-size:18px; cursor:pointer; padding:0; }
+  .seg button.ok.on { background:var(--blue); border-color:var(--blue); color:#fff; }
+  .seg button.tri.on { background:var(--sky); border-color:var(--blue); color:var(--cobalt); }
+  .seg button.no.on { background:var(--pebble); border-color:var(--pebble); color:var(--slate); }
+
+  textarea { width:100%; border:1px solid var(--hair); border-radius:8px; background:#fff; padding:12px; font:inherit; font-size:15px; color:var(--navy); min-height:64px; resize:vertical; }
+  textarea::placeholder { color:var(--mist); }
+  .btn { display:block; width:100%; height:52px; border:none; border-radius:8px; background:var(--blue); color:#fff; font:inherit; font-weight:600; font-size:17px; cursor:pointer; text-align:center; line-height:52px; text-decoration:none; }
+  .btn:disabled { background:var(--mist); cursor:default; }
+  .btn-navy { background:var(--navy); }
+  .help { font-size:13px; color:var(--slate); margin:8px 0 0; }
+
+  .table-wrap { overflow-x:auto; margin:0 -4px; }
+  table { width:100%; border-collapse:collapse; font-size:14px; }
+  th { text-align:center; font-weight:600; color:var(--slate); font-size:12px; padding:8px 4px; border-bottom:1px solid var(--hair); white-space:nowrap; }
+  th.l { text-align:left; }
+  th.me { color:var(--blue); }
+  td { text-align:center; padding:10px 4px; border-bottom:1px solid var(--hair); font-weight:700; font-size:18px; }
+  td.l { text-align:left; font-size:14px; line-height:1.3; }
+  td.l small { display:block; font-weight:500; font-size:12px; color:var(--slate); }
+  tr.all td { background:var(--sky); }
+  tr.all td:first-child { border-radius:8px 0 0 8px; } tr.all td:last-child { border-radius:0 8px 8px 0; }
+  .o { color:var(--blue); } .t { color:var(--cobalt); opacity:.6; } .x { color:var(--mist); } .n { color:var(--hair); }
+  .badge { display:inline-block; background:var(--blue); color:#fff; font-size:11px; font-weight:600; padding:1px 8px; border-radius:50px; margin-top:3px; }
+
+  .decided h2 { font-size:22px; margin-bottom:4px; }
+  .decided .when { font-size:18px; font-weight:700; margin:8px 0 14px; }
+  .decided .when small { display:block; font-weight:500; font-size:14px; color:var(--slate); }
+  .closed { text-align:center; padding:48px 0; color:var(--slate); }
+  .toast { position:fixed; left:50%; bottom:24px; transform:translateX(-50%); background:var(--navy); color:#fff; padding:10px 18px; border-radius:8px; font-size:14px; opacity:0; transition:opacity .2s; pointer-events:none; }
+  .toast.show { opacity:1; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand">いつなら？</div>
+
+  <div id="closedBox" class="card closed hidden">この調整は終了しました</div>
+
+  <div id="main" class="hidden">
+    <div class="card">
+      <h1 id="title"></h1>
+      <div class="meta" id="meta"></div>
+    </div>
+
+    <div id="decidedBox" class="card decided hidden">
+      <h2>決まりました</h2>
+      <div class="when" id="decidedWhen"></div>
+      <a id="decidedLink" class="btn hidden" target="_blank" rel="noopener">リンクを開く</a>
+    </div>
+
+    <div id="voteArea" class="hidden">
+      <div class="card">
+        <h2>あなたの名前</h2>
+        <div class="names" id="who"></div>
+      </div>
+      <div id="markArea" class="hidden">
+        <div class="card">
+          <h2>各候補に ○ △ × をつける</h2>
+          <div id="slots"></div>
+        </div>
+        <div class="card">
+          <textarea id="comment" placeholder="ひとこと（任意）"></textarea>
+          <button class="btn" id="saveBtn" disabled style="margin-top:12px">送信する</button>
+          <p class="help" id="saveHelp">すべての候補に印をつけると送信できます</p>
+        </div>
+      </div>
+    </div>
+
+    <div id="listBox" class="card hidden">
+      <h2>みんなの回答 <span class="sub" id="pending" style="font-weight:500;margin-left:6px"></span></h2>
+      <div class="table-wrap" id="matrix"></div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="./config.js"></script>
+<script>
+  var EVENT = null;
+  var myName = null;
+  var myMarks = {};
+  var VOTES = [];
+  var WD = ['日','月','火','水','木','金','土'];
+
+  function esc(s) {
+    return String(s).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  }
+  function pad2(n) { return (n < 10 ? '0' : '') + n; }
+
+  // 枠を「日付(曜) / 開始〜終了」に分解。start(ISO)があればそれ、無ければlabelを読む
+  function parts(slot) {
+    if (slot && slot.start) {
+      var s = new Date(slot.start), e = slot.end ? new Date(slot.end) : null;
+      if (!isNaN(s.getTime())) {
+        return { date: (s.getMonth() + 1) + '/' + s.getDate() + '(' + WD[s.getDay()] + ')',
+                 time: pad2(s.getHours()) + ':' + pad2(s.getMinutes()) + (e && !isNaN(e.getTime()) ? '〜' + pad2(e.getHours()) + ':' + pad2(e.getMinutes()) : '') };
+      }
+    }
+    var m = /^\s*(\d{1,2}\/\d{1,2}\s*(?:\([日月火水木金土]\))?)\s*(\d{1,2}:\d{2}(?:\s*[–\-〜~]\s*\d{1,2}:\d{2})?)?/.exec((slot && slot.label) || '');
+    if (m && m[2]) return { date: m[1].replace(/\s+/g, ''), time: m[2].replace(/\s*[–\-~]\s*/, '〜') };
+    return null;
+  }
+  function slotLabel(slot) { var p = parts(slot); return p ? p.date + ' ' + p.time : (slot ? slot.label : ''); }
+
+  function computeMatrix(votes, participants, slots) {
+    return slots.map(function (slot) {
+      var cells = participants.map(function (name) {
+        var v = null;
+        for (var i = 0; i < votes.length; i++) {
+          if (votes[i].name === name && votes[i].slotKey === slot.key) { v = votes[i]; break; }
+        }
+        return { name: name, mark: v ? v.mark : null };
+      });
+      var allOk = cells.length > 0 && cells.every(function (c) { return c.mark === '○'; });
+      return { key: slot.key, label: slot.label, cells: cells, allOk: allOk };
+    });
+  }
+
+  function renderMeta() {
+    var m = EVENT.meta || {};
+    var bits = [EVENT.participants.length + '人'];
+    if (m.duration) bits.push(m.duration + '分');
+    bits.push(EVENT.slots.length + '候補');
+    document.getElementById('meta').textContent = bits.join(' ・ ');
+  }
+
+  function renderWho() {
+    var box = document.getElementById('who');
+    box.innerHTML = '';
+    EVENT.participants.forEach(function (name) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = name;
+      b.onclick = function () { selectMe(name, b); };
+      box.appendChild(b);
+    });
+  }
+
+  function selectMe(name, btn) {
+    myName = name;
+    myMarks = {};
+    Array.prototype.forEach.call(document.querySelectorAll('#who button'), function (x) { x.classList.remove('sel'); });
+    btn.classList.add('sel');
+    document.getElementById('markArea').classList.remove('hidden');
+    prefill();
+    renderSlots();
+    renderList(VOTES);
+    checkSave();
+  }
+
+  function renderSlots() {
+    var box = document.getElementById('slots');
+    box.innerHTML = '';
+    EVENT.slots.forEach(function (slot) {
+      var p = parts(slot);
+      var row = document.createElement('div');
+      row.className = 'slot';
+      var lab = document.createElement('div');
+      lab.className = 'lab';
+      lab.innerHTML = p ? esc(p.date) + '<small>' + esc(p.time) + '</small>' : esc(slot.label);
+      var seg = document.createElement('div');
+      seg.className = 'seg';
+      [['○', 'ok'], ['△', 'tri'], ['×', 'no']].forEach(function (pair) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = pair[1] + (myMarks[slot.key] === pair[0] ? ' on' : '');
+        b.textContent = pair[0];
+        b.setAttribute('aria-label', slotLabel(slot) + ' ' + pair[0]);
+        b.onclick = function () {
+          myMarks[slot.key] = pair[0];
+          Array.prototype.forEach.call(seg.children, function (x) { x.classList.toggle('on', x === b); });
+          checkSave();
+        };
+        seg.appendChild(b);
+      });
+      row.appendChild(lab);
+      row.appendChild(seg);
+      box.appendChild(row);
+    });
+  }
+
+  function prefill() {
+    VOTES.forEach(function (v) {
+      if (v.name !== myName) return;
+      myMarks[v.slotKey] = v.mark;
+      if (v.comment) document.getElementById('comment').value = v.comment;
+    });
+  }
+
+  function checkSave() {
+    var all = EVENT.slots.every(function (s) { return myMarks[s.key]; });
+    var ok = !!(myName && all);
+    document.getElementById('saveBtn').disabled = !ok;
+    document.getElementById('saveHelp').classList.toggle('hidden', ok);
+  }
+
+  function renderList(votes) {
+    VOTES = votes || [];
+    var answered = EVENT.participants.filter(function (n) { return VOTES.some(function (v) { return v.name === n; }); });
+    var pending = EVENT.participants.filter(function (n) { return answered.indexOf(n) === -1; });
+    document.getElementById('pending').textContent = pending.length ? '未回答: ' + pending.join('、') : '全員回答済み';
+
+    var rows = computeMatrix(VOTES, EVENT.participants, EVENT.slots);
+    var html = '<table><thead><tr><th class="l">候補</th>';
+    EVENT.participants.forEach(function (n) { html += '<th' + (n === myName ? ' class="me"' : '') + '>' + esc(n) + '</th>'; });
+    html += '</tr></thead><tbody>';
+    rows.forEach(function (r) {
+      var slot = EVENT.slots.filter(function (s) { return s.key === r.key; })[0];
+      var p = parts(slot);
+      html += '<tr' + (r.allOk ? ' class="all"' : '') + '><td class="l">' + (p ? esc(p.date) + '<small>' + esc(p.time) + '</small>' : esc(slot.label)) + (r.allOk ? '<span class="badge">全員○</span>' : '') + '</td>';
+      r.cells.forEach(function (c) {
+        var cls = c.mark === '○' ? 'o' : c.mark === '△' ? 't' : c.mark === '×' ? 'x' : 'n';
+        html += '<td class="' + cls + '">' + (c.mark || '－') + '</td>';
+      });
+      html += '</tr>';
+    });
+    html += '</tbody></table>';
+    document.getElementById('matrix').innerHTML = html;
+  }
+
+  function toast(msg) {
+    var t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(function () { t.classList.remove('show'); }, 2000);
+  }
+
+  // GASは302→script.googleusercontent.com へ飛んでそこでCORSが付く。
+  // headersを付けるとプリフライトが飛んで落ちるので Content-Type は付けない
+  function post(payload) {
+    return fetch(window.ITSUNARA_API, { method: 'POST', body: JSON.stringify(payload) })
+      .then(function (r) { return r.json(); });
+  }
+
+  function save() {
+    var btn = document.getElementById('saveBtn');
+    btn.disabled = true;
+    btn.textContent = '送信中';
+    post({ action: 'submit', id: EVENT.id, name: myName, marks: myMarks, comment: document.getElementById('comment').value })
+      .then(function (res) {
+        btn.textContent = '送信する';
+        if (res && res.ok) { renderList(res.votes); toast('送信しました'); }
+        else toast('送信できませんでした');
+        checkSave();
+      })
+      .catch(function () {
+        btn.textContent = '送信する';
+        btn.disabled = false;
+        toast('通信エラー');
+      });
+  }
+
+  function message(text) {
+    var b = document.getElementById('closedBox');
+    b.textContent = text;
+    b.classList.remove('hidden');
+  }
+
+  function boot() {
+    var id = (location.search.match(/[?&]id=([^&]*)/) || [])[1] || '';
+    if (!id) { message('この調整は見つかりません'); return; }
+    fetch(window.ITSUNARA_API + '?api=event&id=' + encodeURIComponent(decodeURIComponent(id)))
+      .then(function (r) { return r.json(); })
+      .then(function (res) {
+        if (!res || !res.ok || !res.event) { message('この調整は見つかりません'); return; }
+        EVENT = res.event;
+        start(res.votes || []);
+      })
+      .catch(function () { message('この調整は見つかりません'); });
+  }
+
+  function start(votes) {
+    if (EVENT.status === 'closed') { message('この調整は終了しました'); return; }
+    document.title = 'いつなら？｜' + EVENT.title;
+    document.getElementById('main').classList.remove('hidden');
+    document.getElementById('title').textContent = EVENT.title;
+    document.getElementById('listBox').classList.remove('hidden');
+    renderMeta();
+
+    if (EVENT.status === 'decided') {
+      var d = EVENT.decided || {};
+      var slot = EVENT.slots.filter(function (s) { return s.key === d.slotKey; })[0] || { label: d.label || '' };
+      var p = parts(slot);
+      document.getElementById('decidedBox').classList.remove('hidden');
+      document.getElementById('decidedWhen').innerHTML = p ? esc(p.date) + '<small>' + esc(p.time) + '</small>' : esc(d.label || slot.label || '');
+      if (d.url) { var a = document.getElementById('decidedLink'); a.href = d.url; a.classList.remove('hidden'); }
+    } else {
+      document.getElementById('voteArea').classList.remove('hidden');
+      renderWho();
+      document.getElementById('saveBtn').onclick = save;
+    }
+
+    renderList(votes);
+  }
+
+  if ('serviceWorker' in navigator) { navigator.serviceWorker.register('./sw.js').catch(function () {}); }
+  boot();
+</script>
+</body>
+</html>

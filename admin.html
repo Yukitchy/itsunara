@@ -1,0 +1,554 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+<meta name="theme-color" content="#0b3558">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="いつなら？">
+<title>いつなら？ 管理</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  /* Calendly design system (Refero) : Ink Navy / Signal Blue / Cloud / Pebble / Hairline */
+  :root {
+    --navy:#0b3558; --blue:#006bff; --slate:#476788; --mist:#a6bbd1;
+    --cloud:#f8f9fb; --paper:#ffffff; --pebble:#f0f3f8; --hair:#d4e0ed; --sky:#e6f0ff; --cobalt:#004eba;
+    --shadow: rgba(71,103,136,0.04) 0 4px 5px, rgba(71,103,136,0.03) 0 8px 15px, rgba(71,103,136,0.08) 0 30px 50px;
+  }
+  * { box-sizing: border-box; }
+  html, body { overflow-x: hidden; }
+  body {
+    margin: 0;
+    background: var(--cloud);
+    color: var(--navy);
+    font-family: "Manrope","Zen Kaku Gothic New",system-ui,-apple-system,sans-serif;
+    font-weight: 500;
+    line-height: 1.5;
+    -webkit-text-size-adjust: 100%;
+  }
+  .wrap { max-width: 480px; margin: 0 auto; padding: 0 0 64px; }
+  .inner { padding: 16px 16px 0; }
+  @media (min-width: 768px) { .wrap { max-width: 640px; } .inner { padding-top: 32px; } }
+
+  .brand { font-weight: 700; font-size: 15px; color: var(--navy); margin: 4px 0 14px; letter-spacing: .01em; }
+  h1, h2, h3 { font-weight: 700; }
+  h1 { font-size: 24px; line-height: 1.25; margin: 0 0 6px; }
+  h2 { font-size: 16px; margin: 28px 0 12px; }
+  h3 { font-size: 15px; margin: 0 0 8px; overflow-wrap: anywhere; }
+  p { margin: 0 0 12px; }
+  .sub { color: var(--slate); font-size: 13px; }
+  .card { background: var(--paper); border-radius: 16px; box-shadow: var(--shadow); padding: 20px; margin-bottom: 16px; }
+  .hidden { display: none; }
+
+  label.f { display: block; font-size: 13px; font-weight: 600; color: var(--slate); margin: 16px 0 6px; }
+  input[type=text], input[type=number], textarea, select {
+    width: 100%;
+    border: 1px solid var(--hair);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font: inherit;
+    font-size: 15px;
+    background: var(--paper);
+    color: var(--navy);
+  }
+  input::placeholder, textarea::placeholder { color: var(--mist); }
+  input[type=text], input[type=number], select { height: 48px; }
+  textarea { min-height: 90px; resize: vertical; }
+  input:focus, textarea:focus, select:focus { outline: none; border-color: var(--blue); }
+  input[type=checkbox], input[type=radio] { accent-color: var(--blue); }
+  .row { display: flex; gap: 8px; }
+  .row > * { flex: 1; }
+
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    height: 48px;
+    padding: 0 20px;
+    border: none;
+    border-radius: 8px;
+    font: inherit;
+    font-weight: 600;
+    font-size: 15px;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+  }
+  .btn:disabled { background: var(--mist); color: #fff; cursor: default; }
+  .btn-block { display: flex; width: 100%; height: 52px; font-size: 17px; }
+  .btn-primary { background: var(--blue); color: #fff; }
+  .btn-secondary { background: var(--navy); color: #fff; }
+  .btn-sm { height: 40px; font-size: 14px; padding: 0 14px; background: var(--paper); color: var(--blue); border: 1px solid var(--blue); }
+  .btns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    border: 1px solid var(--hair); border-radius: 8px; background: var(--pebble);
+    padding: 6px 8px 6px 12px; font-size: 14px; font-weight: 600;
+  }
+  .chip button {
+    border: none; background: none; color: var(--slate);
+    font: inherit; font-size: 16px; cursor: pointer; padding: 0 2px; line-height: 1;
+  }
+  .add { display: flex; gap: 8px; }
+  .add input { flex: 1; }
+  .add .btn { flex: none; }
+
+  .slotline { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-top: 1px solid var(--hair); font-size: 15px; cursor: pointer; }
+  .slotline:first-child { border-top: none; }
+  .slotline input { width: 20px; height: 20px; flex: none; }
+  .radios label { display: flex; align-items: center; gap: 10px; padding: 8px 0; font-size: 15px; cursor: pointer; }
+  .radios input { width: 18px; height: 18px; flex: none; }
+
+  .badge { display: inline-block; background: var(--pebble); color: var(--cobalt); border-radius: 50px; padding: 2px 10px; font-size: 12px; font-weight: 600; }
+  .badge.on { background: var(--blue); color: #fff; }
+  .msg { color: var(--blue); font-size: 13px; font-weight: 600; }
+  a { color: var(--blue); overflow-wrap: anywhere; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="inner">
+  <div class="brand">いつなら？</div>
+  <h1>管理</h1>
+  <p class="sub">カレンダーの空きから候補を出し、URLを発行する</p>
+
+  <div id="keyBox" class="card hidden">
+    <h3>管理キー</h3>
+    <input type="text" id="keyInput" autocomplete="off">
+    <div class="btns"><button class="btn btn-primary btn-block" id="keySave">保存</button></div>
+  </div>
+
+  <div id="main" class="hidden">
+    <h2>新しい調整</h2>
+    <div class="card">
+      <label class="f" for="title">タイトル</label>
+      <input type="text" id="title">
+
+      <label class="f">参加者</label>
+      <div class="chips" id="chips"></div>
+      <div class="add">
+        <input type="text" id="chipInput" autocomplete="off">
+        <button class="btn btn-secondary" id="chipAdd">追加</button>
+      </div>
+
+      <div class="row">
+        <div>
+          <label class="f" for="duration">所要時間（分）</label>
+          <input type="number" id="duration" value="60">
+        </div>
+        <div>
+          <label class="f" for="days">期間（日）</label>
+          <input type="number" id="days" value="21">
+        </div>
+      </div>
+
+      <label class="f" for="wdTimes">候補にする時刻（平日）</label>
+      <input type="text" id="wdTimes" value="20:00">
+      <label class="f" for="weTimes">候補にする時刻（土日）</label>
+      <input type="text" id="weTimes" value="14:00,20:00">
+
+      <div class="btns">
+        <button class="btn btn-secondary btn-block" id="freeBtn">空きを出す</button>
+      </div>
+
+      <div id="slotBox" class="hidden">
+        <label class="f">候補</label>
+        <div id="slotList"></div>
+      </div>
+
+      <label class="f">確定時のリンク</label>
+      <div class="radios">
+        <label><input type="radio" name="linkType" value="meet" checked>Meetを自動発行</label>
+        <label><input type="radio" name="linkType" value="fixed">固定URLを貼る（Zoomなど）</label>
+        <label><input type="radio" name="linkType" value="none">なし</label>
+      </div>
+      <input type="text" id="fixedUrl" class="hidden" placeholder="https://">
+
+      <div class="btns">
+        <button class="btn btn-primary btn-block" id="createBtn">発行する</button>
+      </div>
+      <p class="msg" id="createMsg"></p>
+
+      <div id="createResult" class="hidden">
+        <label class="f">回答ページ</label>
+        <p><a id="createUrl" target="_blank" rel="noopener"></a></p>
+        <label class="f">LINE用テキスト</label>
+        <textarea id="createText" readonly></textarea>
+        <div class="btns"><button class="btn btn-secondary" data-copy="createText">コピー</button></div>
+      </div>
+    </div>
+
+    <h2>過去の調整</h2>
+    <div id="list"><p class="sub">読み込み中</p></div>
+  </div>
+</div>
+</div>
+
+
+<script src="./config.js"></script>
+<script>
+  var KEY = '';
+  var chips = [];
+  var slots = [];
+  var EVENTS = [];
+
+  function $(id) { return document.getElementById(id); }
+
+  // GASは302→script.googleusercontent.com へ飛んでそこでCORSが付く。
+  // headersを付けるとプリフライトが飛んで落ちるので Content-Type は付けない
+  function post(payload) {
+    payload.key = KEY;
+    return fetch(window.ITSUNARA_API, { method: 'POST', body: JSON.stringify(payload) })
+      .then(function (r) { return r.json(); });
+  }
+
+  // LINEに貼るURLはGASではなくこのPagesのURL
+  function pageUrl(id) {
+    return location.href.replace(/[^/]*$/, '') + '?id=' + id;
+  }
+  function inviteText(title, url) {
+    return '【' + title + '】日程調整\n' +
+      '下のページで名前を選んで、各候補に○△×をつけてください。ログイン不要です。\n' + url;
+  }
+  function decidedText(title, label, url) {
+    return '【' + title + '】決まりました\n' + label + (url ? '\n' + url : '');
+  }
+  function esc(s) {
+    return String(s).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  }
+
+  // ---- 管理キー ----
+  function bootKey() {
+    KEY = localStorage.getItem('itsunara_key') || '';
+    if (!KEY) {
+      $('keyBox').classList.remove('hidden');
+      return false;
+    }
+    $('main').classList.remove('hidden');
+    return true;
+  }
+  $('keySave').onclick = function () {
+    var v = $('keyInput').value.trim();
+    if (!v) return;
+    localStorage.setItem('itsunara_key', v);
+    // GASのiframe内で location.reload() すると白紙になるため、その場で切り替える
+    KEY = v;
+    $('keyBox').classList.add('hidden');
+    $('main').classList.remove('hidden');
+    loadList();
+  };
+
+  // ---- 参加者チップ ----
+  function renderChips() {
+    var box = $('chips');
+    box.innerHTML = '';
+    chips.forEach(function (name, i) {
+      var el = document.createElement('span');
+      el.className = 'chip';
+      el.appendChild(document.createTextNode(name));
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = '×';
+      b.onclick = function () { chips.splice(i, 1); renderChips(); };
+      el.appendChild(b);
+      box.appendChild(el);
+    });
+  }
+  function addChip() {
+    var v = $('chipInput').value.trim();
+    if (!v || chips.indexOf(v) !== -1) { $('chipInput').value = ''; return; }
+    chips.push(v);
+    $('chipInput').value = '';
+    renderChips();
+  }
+  $('chipAdd').onclick = addChip;
+  $('chipInput').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') { e.preventDefault(); addChip(); }
+  });
+
+  // ---- リンク種別 ----
+  Array.prototype.forEach.call(document.querySelectorAll('input[name=linkType]'), function (r) {
+    r.onchange = function () {
+      $('fixedUrl').classList.toggle('hidden', linkType() !== 'fixed');
+    };
+  });
+  function linkType() {
+    return document.querySelector('input[name=linkType]:checked').value;
+  }
+
+  // ---- 空きを出す ----
+  $('freeBtn').onclick = function () {
+    var btn = this;
+    btn.disabled = true;
+    btn.textContent = '取得中';
+    post({
+      action: 'freeSlots',
+      days: Number($('days').value || 21),
+      duration: Number($('duration').value || 60),
+      weekdayTimes: $('wdTimes').value,
+      weekendTimes: $('weTimes').value
+    })
+      .then(function (res) {
+        btn.disabled = false;
+        btn.textContent = '空きを出す';
+        if (!res || !res.ok) { $('createMsg').textContent = (res && res.error) || '失敗しました'; return; }
+        $('createMsg').textContent = '';
+        slots = res.slots || [];
+        renderSlots();
+      })
+      .catch(function (err) {
+        btn.disabled = false;
+        btn.textContent = '空きを出す';
+        $('createMsg').textContent = String(err);
+      });
+  };
+
+  function renderSlots() {
+    var box = $('slotList');
+    $('slotBox').classList.remove('hidden');
+    box.innerHTML = '';
+    if (!slots.length) {
+      box.innerHTML = '<p class="sub">空きがありません</p>';
+      return;
+    }
+    slots.forEach(function (s) {
+      var line = document.createElement('label');
+      line.className = 'slotline';
+      var cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.checked = true;
+      cb.value = s.key;
+      line.appendChild(cb);
+      line.appendChild(document.createTextNode(s.label));
+      box.appendChild(line);
+    });
+  }
+
+  function checkedSlots() {
+    var on = {};
+    Array.prototype.forEach.call($('slotList').querySelectorAll('input:checked'), function (cb) {
+      on[cb.value] = true;
+    });
+    return slots.filter(function (s) { return on[s.key]; });
+  }
+
+  // ---- 発行 ----
+  $('createBtn').onclick = function () {
+    var picked = slots.length ? checkedSlots() : [];
+    var title = $('title').value.trim();
+    if (!title) { $('createMsg').textContent = 'タイトルを入れてください'; return; }
+    if (chips.length < 2) { $('createMsg').textContent = '参加者は2名以上必要です'; return; }
+    if (!picked.length) { $('createMsg').textContent = '候補を1つ以上選んでください'; return; }
+    var btn = this;
+    btn.disabled = true;
+    btn.textContent = '発行中';
+    var participants = chips.slice();
+    post({
+      action: 'create',
+      title: title,
+      participants: participants,
+      slots: picked,
+      duration: Number($('duration').value || 60),
+      linkType: linkType(),
+      fixedUrl: $('fixedUrl').value.trim()
+    })
+      .then(function (res) {
+        btn.disabled = false;
+        btn.textContent = '発行する';
+        if (!res || !res.ok) { $('createMsg').textContent = (res && res.error) || '失敗しました'; return; }
+        $('createMsg').textContent = '';
+        var url = pageUrl(res.id);
+        $('createResult').classList.remove('hidden');
+        $('createUrl').textContent = url;
+        $('createUrl').href = url;
+        $('createText').value = inviteText(title, url);
+        // 参加者に「ユウキ」がいれば全枠○を焼き込む（GAS側 adminCreate と同じ挙動）
+        var after = Promise.resolve();
+        if (participants.indexOf('ユウキ') !== -1) {
+          var marks = {};
+          picked.forEach(function (s) { marks[s.key] = '○'; });
+          after = post({ action: 'vote', id: res.id, name: 'ユウキ', marks: marks, comment: '' });
+        }
+        after.then(loadList, loadList);
+      })
+      .catch(function (err) {
+        btn.disabled = false;
+        btn.textContent = '発行する';
+        $('createMsg').textContent = String(err);
+      });
+  };
+
+  // ---- コピー ----
+  document.addEventListener('click', function (e) {
+    var t = e.target;
+    if (!t.getAttribute || !t.getAttribute('data-copy')) return;
+    var el = $(t.getAttribute('data-copy'));
+    navigator.clipboard.writeText(el.value).then(function () {
+      var old = t.textContent;
+      t.textContent = 'コピーしました';
+      setTimeout(function () { t.textContent = old; }, 1500);
+    });
+  });
+
+  // ---- 過去の調整 ----
+  function loadList() {
+    post({ action: 'list' })
+      .then(function (res) {
+        if (!res || !res.ok) { $('list').innerHTML = '<p class="sub">' + esc((res && res.error) || '読み込めません') + '</p>'; return; }
+        EVENTS = res.events || [];
+        renderList();
+      })
+      .catch(function (err) {
+        $('list').innerHTML = '<p class="sub">' + esc(String(err)) + '</p>';
+      });
+  }
+
+  var STATUS_JA = { open: '受付中', decided: '確定', closed: '終了' };
+
+  function renderList() {
+    var box = $('list');
+    box.innerHTML = '';
+    if (!EVENTS.length) {
+      box.innerHTML = '<p class="sub">まだありません</p>';
+      return;
+    }
+    EVENTS.forEach(function (ev, i) {
+      var c = document.createElement('div');
+      c.className = 'card';
+      var html = '<h3>' + esc(ev.title) + '</h3>';
+      html += '<p class="sub">' + esc(ev.created) + ' ／ <span class="badge' + (ev.status === 'open' ? ' on' : '') + '">' + (STATUS_JA[ev.status] || ev.status) + '</span> ／ 回答 ' + ev.answered.length + '/' + ev.participants.length + ' 人</p>';
+      if (ev.status === 'decided' && ev.decided && ev.decided.label) {
+        html += '<p>確定: ' + esc(ev.decided.label) + '</p>';
+      }
+      if (ev.allOk.length) {
+        html += '<p class="sub">全員○: ' + esc(ev.allOk.map(function (s) { return s.label; }).join(' / ')) + '</p>';
+      }
+      html += '<div class="btns">';
+      html += '<a class="btn btn-secondary btn-sm" href="' + esc(pageUrl(ev.id)) + '" target="_blank" rel="noopener">ページを開く</a>';
+      if (ev.status === 'open') {
+        html += '<button class="btn btn-secondary btn-sm" data-act="decide" data-i="' + i + '">確定</button>';
+      }
+      if (ev.status === 'decided') {
+        html += '<button class="btn btn-secondary btn-sm" data-act="undecide" data-i="' + i + '">確定を取り消す</button>';
+      }
+      if (ev.status !== 'closed') {
+        html += '<button class="btn btn-secondary btn-sm" data-act="close" data-i="' + i + '">終了</button>';
+      }
+      html += '<button class="btn btn-secondary btn-sm" data-act="reuse" data-i="' + i + '">同じメンバーで再発行</button>';
+      html += '</div>';
+      html += '<div class="decideBox hidden"></div>';
+      html += '<p class="msg"></p>';
+      c.innerHTML = html;
+      box.appendChild(c);
+    });
+
+    Array.prototype.forEach.call(box.querySelectorAll('button[data-act]'), function (b) {
+      b.onclick = function () { onAct(b.getAttribute('data-act'), Number(b.getAttribute('data-i')), b); };
+    });
+  }
+
+  function onAct(act, i, btn) {
+    var ev = EVENTS[i];
+    var card = btn.closest('.card');
+    var msg = card.querySelector('.msg');
+    var dbox = card.querySelector('.decideBox');
+
+    if (act === 'reuse') {
+      $('title').value = ev.title;
+      chips = ev.participants.slice();
+      renderChips();
+      if (ev.meta && ev.meta.duration) $('duration').value = ev.meta.duration;
+      var lt = (ev.meta && ev.meta.linkType) || 'meet';
+      var r = document.querySelector('input[name=linkType][value=' + lt + ']');
+      if (r) { r.checked = true; }
+      $('fixedUrl').value = (ev.meta && ev.meta.fixedUrl) || '';
+      $('fixedUrl').classList.toggle('hidden', lt !== 'fixed');
+      window.scrollTo(0, 0);
+      return;
+    }
+
+    if (act === 'decide') {
+      dbox.classList.remove('hidden');
+      dbox.innerHTML = '';
+      var okKeys = {};
+      ev.allOk.forEach(function (s) { okKeys[s.key] = true; });
+      var ordered = ev.allOk.concat(ev.slots.filter(function (s) { return !okKeys[s.key]; }));
+      var lab = document.createElement('label');
+      lab.className = 'f';
+      lab.textContent = '確定する枠';
+      var sel = document.createElement('select');
+      ordered.forEach(function (s) {
+        var o = document.createElement('option');
+        o.value = s.key;
+        o.textContent = s.label + (okKeys[s.key] ? '（全員○）' : '');
+        sel.appendChild(o);
+      });
+      var go = document.createElement('button');
+      go.className = 'btn btn-primary btn-block';
+      go.textContent = 'この枠で確定する';
+      go.style.marginTop = '12px';
+      go.onclick = function () {
+        go.disabled = true;
+        go.textContent = '確定中';
+        post({ action: 'decide', id: ev.id, slotKey: sel.value })
+          .then(function (res) {
+            if (!res || !res.ok) { go.disabled = false; go.textContent = 'この枠で確定する'; msg.textContent = (res && res.error) || '失敗しました'; return; }
+            dbox.innerHTML = '';
+            var l = document.createElement('label');
+            l.className = 'f';
+            l.textContent = '決定のLINE用テキスト';
+            var ta = document.createElement('textarea');
+            ta.readOnly = true;
+            ta.value = decidedText(ev.title, (res.decided && res.decided.label) || '', (res.decided && res.decided.url) || '');
+            ta.id = 'dtext' + i;
+            var cp = document.createElement('button');
+            cp.className = 'btn btn-secondary btn-sm';
+            cp.setAttribute('data-copy', ta.id);
+            cp.textContent = 'コピー';
+            var wrapb = document.createElement('div');
+            wrapb.className = 'btns';
+            wrapb.appendChild(cp);
+            dbox.appendChild(l);
+            dbox.appendChild(ta);
+            dbox.appendChild(wrapb);
+            loadList();
+          })
+          .catch(function (err) {
+            go.disabled = false;
+            go.textContent = 'この枠で確定する';
+            msg.textContent = String(err);
+          });
+      };
+      dbox.appendChild(lab);
+      dbox.appendChild(sel);
+      dbox.appendChild(go);
+      return;
+    }
+
+    btn.disabled = true;
+    post({ action: act === 'undecide' ? 'undecide' : 'close', id: ev.id })
+      .then(function (res) {
+        if (!res || !res.ok) { btn.disabled = false; msg.textContent = (res && res.error) || '失敗しました'; return; }
+        loadList();
+      })
+      .catch(function (err) {
+        btn.disabled = false;
+        msg.textContent = String(err);
+      });
+  }
+
+  // ---- 起動 ----
+  if ('serviceWorker' in navigator) { navigator.serviceWorker.register('./sw.js').catch(function () {}); }
+  chips = ['ユウキ'];
+  renderChips();
+  if (bootKey()) loadList();
+</script>
+</body>
+</html>
