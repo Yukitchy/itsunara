@@ -53,7 +53,10 @@
   .btn { display:block; width:100%; height:52px; border:none; border-radius:8px; background:var(--blue); color:#fff; font:inherit; font-weight:600; font-size:17px; cursor:pointer; text-align:center; line-height:52px; text-decoration:none; }
   .btn:disabled { background:var(--mist); cursor:default; }
   .btn-navy { background:var(--navy); }
+  .btn-sub { background:#fff; color:var(--blue); border:1px solid var(--blue); line-height:50px; }
   .help { font-size:13px; color:var(--slate); margin:8px 0 0; }
+  .ok-line { color:var(--blue); font-weight:700; font-size:17px; line-height:1.4; margin-bottom:4px; }
+  .ok-none { color:var(--slate); font-size:15px; line-height:1.5; }
 
   .table-wrap { overflow-x:auto; margin:0 -4px; }
   table { width:100%; border-collapse:collapse; font-size:14px; }
@@ -86,6 +89,13 @@
     <div class="card">
       <h1 id="title"></h1>
       <div class="meta" id="meta"></div>
+    </div>
+
+    <div id="completeBox" class="card hidden">
+      <h2>全員の回答がそろいました</h2>
+      <div id="completeBody"></div>
+      <p class="help">ユウキが枠を確定すると、ここに決定が表示されます</p>
+      <button class="btn btn-sub" id="copyBtn" type="button" style="margin-top:14px">結果をコピー</button>
     </div>
 
     <div id="decidedBox" class="card decided hidden">
@@ -126,6 +136,7 @@
   var myName = null;
   var myMarks = {};
   var VOTES = [];
+  var SUMMARY = null;
   var WD = ['日','月','火','水','木','金','土'];
 
   function esc(s) {
@@ -266,6 +277,42 @@
     document.getElementById('matrix').innerHTML = html;
   }
 
+  // 全員そろった時のカード。summary は API の返却をそのまま使う（表側で再計算しない）
+  function renderComplete(sum) {
+    SUMMARY = sum || null;
+    var box = document.getElementById('completeBox');
+    if (!SUMMARY || !SUMMARY.allAnswered || EVENT.status !== 'open') { box.classList.add('hidden'); return; }
+    var html;
+    if (SUMMARY.allOk.length) {
+      html = SUMMARY.allOk.map(function (s) { return '<div class="ok-line">' + esc(s.label) + '</div>'; }).join('');
+    } else {
+      html = '<div class="ok-none">全員○の枠はありません</div>';
+      if (SUMMARY.okOrMaybe.length) html += '<div class="ok-none">△を含めると: ' + esc(joinLabels(SUMMARY.okOrMaybe)) + '</div>';
+    }
+    document.getElementById('completeBody').innerHTML = html;
+    box.classList.remove('hidden');
+  }
+
+  function joinLabels(arr) { return arr.map(function (s) { return s.label; }).join(' / '); }
+
+  function completeText() {
+    var lines = ['【' + EVENT.title + '】全員の回答がそろいました'];
+    if (SUMMARY.allOk.length) {
+      lines.push('全員○: ' + joinLabels(SUMMARY.allOk));
+    } else {
+      lines.push('全員○の枠はありません');
+      if (SUMMARY.okOrMaybe.length) lines.push('△を含めると: ' + joinLabels(SUMMARY.okOrMaybe));
+    }
+    lines.push(location.href);
+    return lines.join('\n');
+  }
+
+  function copyResult() {
+    navigator.clipboard.writeText(completeText())
+      .then(function () { toast('コピーしました'); })
+      .catch(function () { toast('コピーできませんでした'); });
+  }
+
   function toast(msg) {
     var t = document.getElementById('toast');
     t.textContent = msg;
@@ -287,7 +334,7 @@
     post({ action: 'submit', id: EVENT.id, name: myName, marks: myMarks, comment: document.getElementById('comment').value })
       .then(function (res) {
         btn.textContent = '送信する';
-        if (res && res.ok) { renderList(res.votes); toast('送信しました'); }
+        if (res && res.ok) { renderList(res.votes); renderComplete(res.summary); toast('送信しました'); }
         else toast('送信できませんでした');
         checkSave();
       })
@@ -312,12 +359,12 @@
       .then(function (res) {
         if (!res || !res.ok || !res.event) { message('この調整は見つかりません'); return; }
         EVENT = res.event;
-        start(res.votes || []);
+        start(res.votes || [], res.summary);
       })
       .catch(function () { message('この調整は見つかりません'); });
   }
 
-  function start(votes) {
+  function start(votes, summary) {
     if (EVENT.status === 'closed') { message('この調整は終了しました'); return; }
     document.title = 'いつなら？｜' + EVENT.title;
     document.getElementById('main').classList.remove('hidden');
@@ -338,7 +385,9 @@
       document.getElementById('saveBtn').onclick = save;
     }
 
+    document.getElementById('copyBtn').onclick = copyResult;
     renderList(votes);
+    renderComplete(summary);
   }
 
   if ('serviceWorker' in navigator) { navigator.serviceWorker.register('./sw.js').catch(function () {}); }
