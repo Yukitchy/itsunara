@@ -308,9 +308,29 @@
   }
 
   function copyResult() {
-    navigator.clipboard.writeText(completeText())
-      .then(function () { toast('コピーしました'); })
-      .catch(function () { toast('コピーできませんでした'); });
+    var text = completeText();
+    var done = function () { toast('コピーしました'); };
+    var fallback = function () { legacyCopy(text) ? done() : toast('コピーできませんでした'); };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, fallback);
+    } else {
+      fallback();
+    }
+  }
+
+  // clipboard API が使えない環境（古いSafari / iframe内）用
+  function legacyCopy(text) {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+    document.body.appendChild(ta);
+    ta.select();
+    ta.setSelectionRange(0, text.length);
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+    document.body.removeChild(ta);
+    return ok;
   }
 
   function toast(msg) {
