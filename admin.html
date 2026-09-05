@@ -85,6 +85,10 @@
   .btn-sm { height: 40px; font-size: 14px; padding: 0 14px; background: var(--paper); color: var(--blue); border: 1px solid var(--blue); }
   .btns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
 
+  .presets { display: flex; gap: 8px; }
+  .preset { flex: 1; height: 44px; padding: 0 8px; background: var(--paper); color: var(--blue); border: 1px solid var(--blue); }
+  .preset.on { background: var(--navy); color: #fff; border-color: var(--navy); }
+
   .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
   .chip {
     display: inline-flex; align-items: center; gap: 6px;
@@ -127,6 +131,13 @@
   <div id="main" class="hidden">
     <h2>新しい調整</h2>
     <div class="card">
+      <label class="f">用途</label>
+      <div class="presets">
+        <button class="btn preset" type="button">収録</button>
+        <button class="btn preset" type="button">飲み会</button>
+        <button class="btn preset" type="button">打ち合わせ</button>
+      </div>
+
       <label class="f" for="title">タイトル</label>
       <input type="text" id="title">
 
@@ -284,17 +295,45 @@
     return document.querySelector('input[name=linkType]:checked').value;
   }
 
+  // ---- 用途プリセット ----
+  var PRESETS = {
+    '収録':       { duration: 60,  days: 21, wd: '20:00,21:00',        we: '20:00' },
+    '飲み会':     { duration: 120, days: 28, wd: '',                   we: '18:00,19:00' },
+    '打ち合わせ': { duration: 30,  days: 14, wd: '12:00,13:00,14:00',  we: '' }
+  };
+  var presetBtns = document.querySelectorAll('.preset');
+  Array.prototype.forEach.call(presetBtns, function (b) {
+    b.onclick = function () {
+      var p = PRESETS[b.textContent];
+      $('duration').value = p.duration;
+      $('days').value = p.days;
+      $('wdTimes').value = p.wd;
+      $('weTimes').value = p.we;
+      if (!$('title').value.trim()) $('title').value = b.textContent;
+      Array.prototype.forEach.call(presetBtns, function (o) { o.classList.toggle('on', o === b); });
+      runFree();
+    };
+  });
+
   // ---- 空きを出す ----
-  $('freeBtn').onclick = function () {
-    var btn = this;
+  // 空欄はその曜日区分を候補にしない（サーバーの既定値に落ちないよう [] を渡す）
+  function timesOf(id) {
+    var v = $(id).value.trim();
+    return v ? v : [];
+  }
+
+  $('freeBtn').onclick = runFree;
+
+  function runFree() {
+    var btn = $('freeBtn');
     btn.disabled = true;
     btn.textContent = '取得中';
     post({
       action: 'freeSlots',
       days: Number($('days').value || 21),
       duration: Number($('duration').value || 60),
-      weekdayTimes: $('wdTimes').value,
-      weekendTimes: $('weTimes').value
+      weekdayTimes: timesOf('wdTimes'),
+      weekendTimes: timesOf('weTimes')
     })
       .then(function (res) {
         btn.disabled = false;
@@ -309,7 +348,7 @@
         btn.textContent = '空きを出す';
         $('createMsg').textContent = String(err);
       });
-  };
+  }
 
   function renderSlots() {
     var box = $('slotList');
