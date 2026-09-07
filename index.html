@@ -77,6 +77,15 @@
   .decided .when { font-size:18px; font-weight:700; margin:8px 0 14px; }
   .decided .when small { display:block; font-weight:500; font-size:14px; color:var(--slate); }
   .closed { text-align:center; padding:48px 0; color:var(--slate); }
+  .sk { background:var(--pebble); border-radius:8px; animation:skp 1.2s ease-in-out infinite; }
+  .sk + .sk { margin-top:10px; }
+  .sk-title { height:26px; width:70%; }
+  .sk-meta { height:14px; width:40%; }
+  .sk-h { height:18px; width:35%; }
+  .sk-box { height:48px; }
+  .sk-row { height:40px; }
+  @keyframes skp { 0%,100% { opacity:1; } 50% { opacity:.45; } }
+  @media (prefers-reduced-motion: reduce) { .sk { animation:none; } }
   .toast { position:fixed; left:50%; bottom:24px; transform:translateX(-50%); background:var(--navy); color:#fff; padding:10px 18px; border-radius:8px; font-size:14px; opacity:0; transition:opacity .2s; pointer-events:none; }
   .toast.show { opacity:1; }
 </style>
@@ -84,6 +93,12 @@
 <body>
 <div class="wrap">
   <img class="brand" src="./wordmark.png" alt="いつなら？">
+
+  <div id="skeleton" aria-hidden="true">
+    <div class="card"><div class="sk sk-title"></div><div class="sk sk-meta"></div></div>
+    <div class="card"><div class="sk sk-h"></div><div class="sk sk-box"></div></div>
+    <div class="card"><div class="sk sk-h"></div><div class="sk sk-row"></div><div class="sk sk-row"></div><div class="sk sk-row"></div></div>
+  </div>
 
   <div id="closedBox" class="card closed hidden">この調整は終了しました</div>
 
@@ -379,9 +394,15 @@
   }
 
   function message(text) {
+    hideSkeleton();
     var b = document.getElementById('closedBox');
     b.textContent = text;
     b.classList.remove('hidden');
+  }
+
+  function hideSkeleton() {
+    var sk = document.getElementById('skeleton');
+    if (sk) sk.remove();
   }
 
   function boot() {
@@ -390,11 +411,12 @@
     fetch(window.ITSUNARA_API + '?api=event&id=' + encodeURIComponent(decodeURIComponent(id)))
       .then(function (r) { return r.json(); })
       .then(function (res) {
+        hideSkeleton();
         if (!res || !res.ok || !res.event) { message('この調整は見つかりません'); return; }
         EVENT = res.event;
         start(res.votes || [], res.summary);
       })
-      .catch(function () { message('この調整は見つかりません'); });
+      .catch(function () { hideSkeleton(); message('通信できませんでした。電波の良いところで開き直してください'); });
   }
 
   function start(votes, summary) {
