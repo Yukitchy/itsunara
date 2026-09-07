@@ -405,18 +405,80 @@
     if (sk) sk.remove();
   }
 
+  // 前回この端末で見た内容。あれば即座に描いて、裏で最新を取り直す。
+  // GAS は速くても1秒前後かかるので、2回目以降は待ち時間ゼロで中身が出る。
+  function cacheKey(id) { return 'itsunara:v1:' + id; }
+
+  function readCache(id) {
+    try { return JSON.parse(localStorage.getItem(cacheKey(id)) || 'null'); } catch (e) { return null; }
+  }
+
+  function writeCache(id, res) {
+    try { localStorage.setItem(cacheKey(id), JSON.stringify(res)); } catch (e) { /* 容量超過や無効化は無視 */ }
+  }
+
+  // fetch には既定の制限時間が無い。返ってこないと骨組みのまま永遠に待つので必ず切る。
+  function fetchEvent(id, ms) {
+    var ctl = ('AbortController' in window) ? new AbortController() : null;
+    var timer = setTimeout(function () { if (ctl) ctl.abort(); }, ms);
+    var opt = ctl ? { signal: ctl.signal } : {};
+    return fetch(window.ITSUNARA_API + '?api=event&id=' + encodeURIComponent(id), opt)
+      .then(function (r) { return r.json(); })
+      .then(function (res) { clearTimeout(timer); return res; },
+            function (err) { clearTimeout(timer); throw err; });
+  }
+
+  function failed(hadContent) {
+    if (hadContent) return;               // 古い内容が出ているなら黙って諦める
+    hideSkeleton();
+    var b = document.getElementById('closedBox');
+    b.innerHTML = '';
+    b.appendChild(document.createTextNode('読み込めませんでした。電波の良いところでもう一度お試しください。'));
+    var btn = document.createElement('button');
+    btn.className = 'btn';
+    btn.type = 'button';
+    btn.style.marginTop = '12px';
+    btn.textContent = 'もう一度読み込む';
+    btn.onclick = function () { location.reload(); };
+    b.appendChild(document.createElement('br'));
+    b.appendChild(btn);
+    b.classList.remove('hidden');
+  }
+
   function boot() {
     var id = (location.search.match(/[?&]id=([^&]*)/) || [])[1] || '';
     if (!id) { message('この調整は見つかりません'); return; }
-    fetch(window.ITSUNARA_API + '?api=event&id=' + encodeURIComponent(decodeURIComponent(id)))
-      .then(function (r) { return r.json(); })
-      .then(function (res) {
-        hideSkeleton();
-        if (!res || !res.ok || !res.event) { message('この調整は見つかりません'); return; }
-        EVENT = res.event;
-        start(res.votes || [], res.summary);
+    id = decodeURIComponent(id);
+
+    var shown = false;
+    var cached = readCache(id);
+    if (cached && cached.event) {          // まず前回の内容を即描画
+      hideSkeleton();
+      EVENT = cached.event;
+      start(cached.votes || [], cached.summary);
+      shown = true;
+    }
+
+    function apply(res) {
+      if (!res || !res.ok || !res.event) {
+        if (!shown) { hideSkeleton(); message('この調整は見つかりません'); }
+        return;
+      }
+      writeCache(id, res);
+      hideSkeleton();
+      EVENT = res.event;
+      // 名前を入れて記入中なら画面を作り直さず、表だけ静かに更新する
+      if (shown && myName) { renderList(res.votes || []); renderComplete(res.summary); }
+      else { start(res.votes || [], res.summary); }
+      shown = true;
+    }
+
+    fetchEvent(id, 12000)
+      .then(apply)
+      .catch(function () {
+        return fetchEvent(id, 12000).then(apply);   // 詰まったら1回だけ引き直す
       })
-      .catch(function () { hideSkeleton(); message('通信できませんでした。電波の良いところで開き直してください'); });
+      .catch(function () { failed(shown); });
   }
 
   function start(votes, summary) {
