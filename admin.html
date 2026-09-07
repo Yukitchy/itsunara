@@ -136,6 +136,7 @@
         <button class="btn preset" type="button">収録</button>
         <button class="btn preset" type="button">飲み会</button>
         <button class="btn preset" type="button">打ち合わせ</button>
+        <button class="btn preset" type="button">もくもく会</button>
       </div>
 
       <label class="f" for="title">タイトル</label>
@@ -299,7 +300,8 @@
   var PRESETS = {
     '収録':       { duration: 60,  days: 21, wd: '20:00,21:00',        we: '20:00' },
     '飲み会':     { duration: 120, days: 28, wd: '',                   we: '18:00,19:00' },
-    '打ち合わせ': { duration: 30,  days: 14, wd: '12:00,13:00,14:00',  we: '' }
+    '打ち合わせ': { duration: 30,  days: 14, wd: '12:00,13:00,14:00',  we: '' },
+    'もくもく会': { duration: 240, days: 60, wd: '',                   we: '11:00' }
   };
   var presetBtns = document.querySelectorAll('.preset');
   Array.prototype.forEach.call(presetBtns, function (b) {

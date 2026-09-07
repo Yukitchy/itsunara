@@ -34,6 +34,8 @@
   .meta { color:var(--slate); font-size:14px; }
   .sub { color:var(--slate); font-size:14px; }
 
+  #whoText { width:100%; box-sizing:border-box; height:48px; padding:0 12px; border:1px solid var(--hair); border-radius:8px; font:inherit; font-size:16px; color:var(--navy); background:var(--paper); margin-bottom:10px; }
+  #whoText:focus { outline:none; border-color:var(--blue); }
   .names { display:flex; flex-wrap:wrap; gap:8px; }
   .names button { min-height:48px; padding:0 16px; border:1px solid var(--blue); border-radius:8px; background:#fff; color:var(--blue); font:inherit; font-weight:600; font-size:15px; cursor:pointer; }
   .names button.sel { background:var(--navy); border-color:var(--navy); color:#fff; }
@@ -107,6 +109,7 @@
     <div id="voteArea" class="hidden">
       <div class="card">
         <h2>あなたの名前</h2>
+        <input id="whoText" type="text" placeholder="名前を入力" autocomplete="name">
         <div class="names" id="who"></div>
       </div>
       <div id="markArea" class="hidden">
@@ -193,14 +196,22 @@
       b.onclick = function () { selectMe(name, b); };
       box.appendChild(b);
     });
+    var text = document.getElementById('whoText');
+    if (text && !text.dataset.wired) {
+      text.dataset.wired = '1';
+      text.addEventListener('input', function () { selectMe(text.value, null); });
+    }
   }
 
   function selectMe(name, btn) {
+    name = (name || '').trim();
+    if (name !== myName) myMarks = {};
     myName = name;
-    myMarks = {};
     Array.prototype.forEach.call(document.querySelectorAll('#who button'), function (x) { x.classList.remove('sel'); });
-    btn.classList.add('sel');
-    document.getElementById('markArea').classList.remove('hidden');
+    if (btn) btn.classList.add('sel');
+    var box = document.getElementById('whoText');
+    if (box && box.value !== name) box.value = name;
+    document.getElementById('markArea').classList.toggle('hidden', !name);
     prefill();
     renderSlots();
     renderList(VOTES);
@@ -255,13 +266,15 @@
 
   function renderList(votes) {
     VOTES = votes || [];
-    var answered = EVENT.participants.filter(function (n) { return VOTES.some(function (v) { return v.name === n; }); });
-    var pending = EVENT.participants.filter(function (n) { return answered.indexOf(n) === -1; });
+    var names = [];
+    VOTES.forEach(function (v) { if (v.name && names.indexOf(v.name) === -1) names.push(v.name); });
+    EVENT.participants.forEach(function (n) { if (names.indexOf(n) === -1) names.push(n); });
+    var pending = EVENT.participants.filter(function (n) { return !VOTES.some(function (v) { return v.name === n; }); });
     document.getElementById('pending').textContent = pending.length ? '未回答: ' + pending.join('、') : '全員回答済み';
 
-    var rows = computeMatrix(VOTES, EVENT.participants, EVENT.slots);
+    var rows = computeMatrix(VOTES, names, EVENT.slots);
     var html = '<table><thead><tr><th class="l">候補</th>';
-    EVENT.participants.forEach(function (n) { html += '<th' + (n === myName ? ' class="me"' : '') + '>' + esc(n) + '</th>'; });
+    names.forEach(function (n) { html += '<th' + (n === myName ? ' class="me"' : '') + '>' + esc(n) + '</th>'; });
     html += '</tr></thead><tbody>';
     rows.forEach(function (r) {
       var slot = EVENT.slots.filter(function (s) { return s.key === r.key; })[0];
