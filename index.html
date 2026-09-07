@@ -450,34 +450,41 @@
     if (!id) { message('この調整は見つかりません'); return; }
     id = decodeURIComponent(id);
 
-    var shown = false;
-    var cached = readCache(id);
-    if (cached && cached.event) {          // まず前回の内容を即描画
-      hideSkeleton();
-      EVENT = cached.event;
-      start(cached.votes || [], cached.summary);
-      shown = true;
-    }
+    // 描画は3つの供給元から。速報（端末の記録・発行時のスナップショット）で先に絵を出し、
+    // GAS から本物が届いたら必ず上書きする。速報が本物を上書きすることは無い。
+    var live = false;   // GAS の結果を描いたか
+    var shown = false;  // 何かしら描いたか
 
-    function apply(res) {
-      if (!res || !res.ok || !res.event) {
-        if (!shown) { hideSkeleton(); message('この調整は見つかりません'); }
-        return;
-      }
-      writeCache(id, res);
+    function render(res, isLive) {
+      if (!res || !res.ok || !res.event) return;
+      if (!isLive && shown) return;          // 速報は空の画面を埋めるときだけ
       hideSkeleton();
       EVENT = res.event;
       // 名前を入れて記入中なら画面を作り直さず、表だけ静かに更新する
       if (shown && myName) { renderList(res.votes || []); renderComplete(res.summary); }
       else { start(res.votes || [], res.summary); }
       shown = true;
+      if (isLive) { live = true; writeCache(id, res); }
+    }
+
+    render(readCache(id), false);            // ① 前にこの端末で見た内容
+
+    fetch('./e/' + encodeURIComponent(id) + '.json')   // ② 発行時のスナップショット(GitHub Pages・15ms)
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (res) { render(res, false); })
+      .catch(function () { /* 無ければGASを待つだけ */ });
+
+    function fromGas(res) {                  // ③ 本物
+      if (!res || !res.ok || !res.event) {
+        if (!shown) { hideSkeleton(); message('この調整は見つかりません'); }
+        return;
+      }
+      render(res, true);
     }
 
     fetchEvent(id, 12000)
-      .then(apply)
-      .catch(function () {
-        return fetchEvent(id, 12000).then(apply);   // 詰まったら1回だけ引き直す
-      })
+      .then(fromGas)
+      .catch(function () { return fetchEvent(id, 12000).then(fromGas); })
       .catch(function () { failed(shown); });
   }
 
