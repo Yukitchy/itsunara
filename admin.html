@@ -548,6 +548,9 @@
       c.className = 'card';
       var html = '<h3>' + esc(ev.title) + '</h3>';
       html += '<p class="sub">' + esc(ev.created) + ' ／ <span class="badge' + (ev.status === 'open' ? ' on' : '') + '">' + (STATUS_JA[ev.status] || ev.status) + '</span> ／ 回答 ' + ev.answered.length + '/' + ev.participants.length + ' 人</p>';
+      if (ev.meta && ev.meta.lineTo) {
+        html += '<p class="sub">LINEグループ連携済み（確定するとグループへ自動投稿）</p>';
+      }
       if (ev.status === 'decided' && ev.decided && ev.decided.label) {
         html += '<p>確定: ' + esc(ev.decided.label) + '</p>';
         html += '<label class="f">決定のLINE用テキスト</label><textarea readonly id="dtext' + i + '">' + esc(decidedText(ev.title, ev.decided.label, ev.decided.url || '')) + '</textarea>';
@@ -677,6 +680,7 @@
         post({ action: 'decide', id: ev.id, slotKey: sel.value })
           .then(function (res) {
             if (!res || !res.ok) { go.disabled = false; go.textContent = 'この枠で確定する'; msg.textContent = (res && res.error) || '失敗しました'; return; }
+            if (res.lineSent) alert('確定しました。LINEグループにも決定カードを投稿しました');
             loadList();
           })
           .catch(function (err) {
