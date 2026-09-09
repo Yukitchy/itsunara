@@ -106,6 +106,12 @@
   .add input { flex: 1; }
   .add .btn { flex: none; }
 
+  .tally { width: 100%; border-collapse: collapse; margin: 10px 0 4px; font-size: 14px; }
+  .tally td { padding: 9px 0; border-top: 1px solid var(--hair); }
+  .tally tr:first-child td { border-top: none; }
+  .tally .d { color: var(--navy); }
+  .tally .n { text-align: right; width: 46px; white-space: nowrap; color: var(--slate); font-variant-numeric: tabular-nums; }
+  .tally tr.best td { color: #0b8a3d; font-weight: 700; }
   .slotline { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-top: 1px solid var(--hair); font-size: 15px; cursor: pointer; }
   .slotline:first-child { border-top: none; }
   .slotline input { width: 20px; height: 20px; flex: none; }
@@ -476,7 +482,19 @@
       if (ev.status === 'decided' && ev.decided && ev.decided.label) {
         html += '<p>確定: ' + esc(ev.decided.label) + '</p>';
       }
-      if (ev.allOk.length) {
+      if (ev.tally && ev.tally.length) {
+        var bo = -1, bx = 0;
+        ev.tally.forEach(function (t) {
+          if (t.o > bo || (t.o === bo && t.x < bx)) { bo = t.o; bx = t.x; }
+        });
+        html += '<table class="tally">';
+        ev.tally.forEach(function (t) {
+          var best = bo > 0 && t.o === bo && t.x === bx;
+          html += '<tr' + (best ? ' class="best"' : '') + '><td class="d">' + esc(t.label) + '</td>' +
+            '<td class="n">\u25cb ' + t.o + '</td><td class="n">\u25b3 ' + t.m + '</td><td class="n">\u00d7 ' + t.x + '</td></tr>';
+        });
+        html += '</table>';
+      } else if (ev.allOk.length) {
         html += '<p class="sub">全員○: ' + esc(ev.allOk.map(function (s) { return s.label; }).join(' / ')) + '</p>';
       }
       html += '<div class="btns">';
