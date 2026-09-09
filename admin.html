@@ -36,7 +36,10 @@
   .inner { padding: 16px 16px 0; }
   @media (min-width: 768px) { .wrap { max-width: 640px; } .inner { padding-top: 32px; } }
 
-  .brand { display:block; height:36px; width:auto; margin:6px 0 16px; }
+  .head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin: 0 0 20px; }
+  .head h1 { margin: 0 0 4px; }
+  .head .sub { margin: 0; }
+  .brand { flex: none; height:26px; width:auto; margin-top:3px; }
   h1, h2, h3 { font-weight: 700; }
   h1 { font-size: 24px; line-height: 1.25; margin: 0 0 6px; }
   h2 { font-size: 16px; margin: 28px 0 12px; }
@@ -118,9 +121,13 @@
 <body>
 <div class="wrap">
   <div class="inner">
-  <img class="brand" src="./wordmark.png" alt="いつなら？">
-  <h1>管理</h1>
-  <p class="sub">カレンダーの空きから候補を出し、URLを発行する</p>
+  <header class="head">
+    <div>
+      <h1>管理</h1>
+      <p class="sub">カレンダーの空きから候補を出し、URLを発行する</p>
+    </div>
+    <img class="brand" src="./wordmark.png" alt="いつなら？">
+  </header>
 
   <div id="keyBox" class="card hidden">
     <h3>管理キー</h3>
