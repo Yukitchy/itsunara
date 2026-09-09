@@ -217,7 +217,7 @@
 </div>
 
 
-<script src="./config.js"></script>
+<script src="./config.js?v=2"></script>
 <script>
   var KEY = '';
   var chips = [];
@@ -317,7 +317,7 @@
   function decidedCal(ev) {
     var d = ev.decided || {};
     var slot = (ev.slots || []).filter(function (s) { return s.key === d.slotKey; })[0];
-    if (!slot || !slot.start || !slot.end) return '';
+    if (!slot || !slot.start || !slot.end || typeof gcalUrl !== 'function') return '';
     return gcalUrl(ev.title, slot.start, slot.end, pageUrl(ev.id) + (d.url ? '\n' + d.url : ''), d.url || '');
   }
   function esc(s) {

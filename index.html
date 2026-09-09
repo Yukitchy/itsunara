@@ -149,7 +149,7 @@
 </div>
 <div class="toast" id="toast"></div>
 
-<script src="./config.js"></script>
+<script src="./config.js?v=2"></script>
 <script>
   var EVENT = null;
   var myName = null;
@@ -504,7 +504,7 @@
       document.getElementById('decidedBox').classList.remove('hidden');
       document.getElementById('decidedWhen').innerHTML = p ? esc(p.date) + '<small>' + esc(p.time) + '</small>' : esc(d.label || slot.label || '');
       if (d.url) { var a = document.getElementById('decidedLink'); a.href = d.url; a.classList.remove('hidden'); }
-      var cal = slot.start && slot.end ? gcalUrl(EVENT.title, slot.start, slot.end, location.href + (d.url ? '\n' + d.url : ''), d.url || '') : '';
+      var cal = slot.start && slot.end && typeof gcalUrl === 'function' ? gcalUrl(EVENT.title, slot.start, slot.end, location.href + (d.url ? '\n' + d.url : ''), d.url || '') : '';
       if (cal) { var ca = document.getElementById('decidedCal'); ca.href = cal; ca.classList.remove('hidden'); }
     } else {
       document.getElementById('voteArea').classList.remove('hidden');
