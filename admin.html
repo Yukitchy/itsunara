@@ -292,7 +292,7 @@
     });
 
     c.fillStyle = '#a6bbd1'; c.font = '600 26px ' + FONT;
-    c.fillText('全員の回答から決定  ·  いつなら？', PAD, H - 56);
+    c.fillText('カレンダーに入れるリンクはメッセージにあります  ·  いつなら？', PAD, H - 56);
     return cv;
   }
   function wrapText(c, text, maxW, maxLines) {
@@ -310,8 +310,15 @@
     c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r);
     c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath();
   }
-  function decidedText(title, label, url) {
-    return '【' + title + '】決まりました\n' + label + (url ? '\n' + url : '');
+  function decidedText(title, label, url, cal) {
+    return '【' + title + '】決まりました\n' + label + (url ? '\n' + url : '')
+      + (cal ? '\n\n自分のカレンダーに入れる:\n' + cal : '');
+  }
+  function decidedCal(ev) {
+    var d = ev.decided || {};
+    var slot = (ev.slots || []).filter(function (s) { return s.key === d.slotKey; })[0];
+    if (!slot || !slot.start || !slot.end) return '';
+    return gcalUrl(ev.title, slot.start, slot.end, pageUrl(ev.id) + (d.url ? '\n' + d.url : ''), d.url || '');
   }
   function esc(s) {
     return String(s).replace(/[&<>"]/g, function (c) {
@@ -553,7 +560,7 @@
       }
       if (ev.status === 'decided' && ev.decided && ev.decided.label) {
         html += '<p>確定: ' + esc(ev.decided.label) + '</p>';
-        html += '<label class="f">決定のLINE用テキスト</label><textarea readonly id="dtext' + i + '">' + esc(decidedText(ev.title, ev.decided.label, ev.decided.url || '')) + '</textarea>';
+        html += '<label class="f">決定のLINE用テキスト</label><textarea readonly id="dtext' + i + '">' + esc(decidedText(ev.title, ev.decided.label, ev.decided.url || '', decidedCal(ev))) + '</textarea>';
         html += '<div class="btns"><button class="btn btn-secondary btn-sm" data-copy="dtext' + i + '">コピー</button>' +
           '<button class="btn btn-secondary btn-sm" data-act="card" data-i="' + i + '">決定カード画像</button></div>';
         html += '<div class="cardBox"></div>';

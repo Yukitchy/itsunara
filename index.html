@@ -119,6 +119,7 @@
       <h2>決まりました</h2>
       <div class="when" id="decidedWhen"></div>
       <a id="decidedLink" class="btn hidden" target="_blank" rel="noopener">リンクを開く</a>
+      <a id="decidedCal" class="btn btn-sub hidden" target="_blank" rel="noopener" style="margin-top:10px">自分のGoogleカレンダーに追加</a>
     </div>
 
     <div id="voteArea" class="hidden">
@@ -503,6 +504,8 @@
       document.getElementById('decidedBox').classList.remove('hidden');
       document.getElementById('decidedWhen').innerHTML = p ? esc(p.date) + '<small>' + esc(p.time) + '</small>' : esc(d.label || slot.label || '');
       if (d.url) { var a = document.getElementById('decidedLink'); a.href = d.url; a.classList.remove('hidden'); }
+      var cal = slot.start && slot.end ? gcalUrl(EVENT.title, slot.start, slot.end, location.href + (d.url ? '\n' + d.url : ''), d.url || '') : '';
+      if (cal) { var ca = document.getElementById('decidedCal'); ca.href = cal; ca.classList.remove('hidden'); }
     } else {
       document.getElementById('voteArea').classList.remove('hidden');
       renderWho();
