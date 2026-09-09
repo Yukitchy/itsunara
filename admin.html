@@ -102,6 +102,7 @@
     border: none; background: none; color: var(--slate);
     font: inherit; font-size: 16px; cursor: pointer; padding: 0 2px; line-height: 1;
   }
+  .dcard { display: block; width: 100%; max-width: 360px; border: 1px solid var(--hair); border-radius: 12px; margin-top: 10px; }
   .add { display: flex; gap: 8px; }
   .add input { flex: 1; }
   .add .btn { flex: none; }
@@ -240,6 +241,74 @@
   function inviteText(title, url) {
     return '【' + title + '】日程調整\n' +
       '下のページで名前を入力して、各候補に○△×をつけてください。ログイン不要です。\n' + url;
+  }
+  // 決定カード（LINEに貼る画像）。label は "10/23(金) 10:00-13:00" 形式
+  function drawDecidedCard(ev) {
+    var FONT = '"Manrope","Zen Kaku Gothic New","Hiragino Sans",sans-serif';
+    var W = 1080, H = 720, PAD = 72;
+    var cv = document.createElement('canvas');
+    cv.width = W; cv.height = H;
+    var c = cv.getContext('2d');
+    var label = (ev.decided && ev.decided.label) || '';
+    var sp = label.indexOf(' ');
+    var date = sp > 0 ? label.slice(0, sp) : label;
+    var time = sp > 0 ? label.slice(sp + 1) : '';
+    var names = ev.participants || [];
+
+    // 先に行数を測って高さを決める（タイトル2行＋名前が折り返すと720では足りない）
+    c.font = '700 46px ' + FONT;
+    var titleLines = wrapText(c, ev.title, W - PAD * 2, 2);
+    c.font = '700 30px ' + FONT;
+    var rows = 1, mx = PAD;
+    names.forEach(function (n) {
+      var w = c.measureText('○ ' + n).width + 40;
+      if (mx + w > W - PAD) { mx = PAD; rows++; }
+      mx += w + 12;
+    });
+    H = 720 + (titleLines.length - 1) * 58 + (rows - 1) * 62;
+    cv.height = H;
+
+    c.fillStyle = '#ffffff'; c.fillRect(0, 0, W, H);
+    c.fillStyle = '#eaf2ff'; c.fillRect(0, 0, W, 340);
+    c.textBaseline = 'alphabetic';
+    c.fillStyle = '#476788'; c.font = '700 34px ' + FONT; c.fillText('決まりました', PAD, 108);
+    c.fillStyle = '#0b3558'; c.font = '700 124px ' + FONT; c.fillText(date, PAD - 4, 236);
+    c.fillStyle = '#006bff'; c.font = '700 56px ' + FONT; c.fillText(time, PAD, 306);
+
+    c.fillStyle = '#0b3558'; c.font = '700 46px ' + FONT;
+    var y = 428;
+    titleLines.forEach(function (ln) { c.fillText(ln, PAD, y); y += 58; });
+
+    var x = PAD; y += 20;
+    c.font = '700 30px ' + FONT;
+    names.forEach(function (n) {
+      var t = '○ ' + n;
+      var w = c.measureText(t).width + 40;
+      if (x + w > W - PAD) { x = PAD; y += 62; }
+      c.fillStyle = '#eaf3de';
+      roundRect(c, x, y - 40, w, 54, 27); c.fill();
+      c.fillStyle = '#27500a'; c.fillText(t, x + 20, y);
+      x += w + 12;
+    });
+
+    c.fillStyle = '#a6bbd1'; c.font = '600 26px ' + FONT;
+    c.fillText('全員の回答から決定  ·  いつなら？', PAD, H - 56);
+    return cv;
+  }
+  function wrapText(c, text, maxW, maxLines) {
+    var lines = [], cur = '';
+    Array.prototype.forEach.call(String(text), function (ch) {
+      if (c.measureText(cur + ch).width > maxW && cur) { lines.push(cur); cur = ''; }
+      cur += ch;
+    });
+    if (cur) lines.push(cur);
+    if (lines.length > maxLines) { lines = lines.slice(0, maxLines); lines[maxLines - 1] = lines[maxLines - 1].slice(0, -1) + '…'; }
+    return lines;
+  }
+  function roundRect(c, x, y, w, h, r) {
+    c.beginPath();
+    c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r);
+    c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath();
   }
   function decidedText(title, label, url) {
     return '【' + title + '】決まりました\n' + label + (url ? '\n' + url : '');
@@ -481,6 +550,10 @@
       html += '<p class="sub">' + esc(ev.created) + ' ／ <span class="badge' + (ev.status === 'open' ? ' on' : '') + '">' + (STATUS_JA[ev.status] || ev.status) + '</span> ／ 回答 ' + ev.answered.length + '/' + ev.participants.length + ' 人</p>';
       if (ev.status === 'decided' && ev.decided && ev.decided.label) {
         html += '<p>確定: ' + esc(ev.decided.label) + '</p>';
+        html += '<label class="f">決定のLINE用テキスト</label><textarea readonly id="dtext' + i + '">' + esc(decidedText(ev.title, ev.decided.label, ev.decided.url || '')) + '</textarea>';
+        html += '<div class="btns"><button class="btn btn-secondary btn-sm" data-copy="dtext' + i + '">コピー</button>' +
+          '<button class="btn btn-secondary btn-sm" data-act="card" data-i="' + i + '">決定カード画像</button></div>';
+        html += '<div class="cardBox"></div>';
       }
       if (ev.tally && ev.tally.length) {
         var bo = -1, bx = 0;
@@ -527,6 +600,43 @@
     var msg = card.querySelector('.msg');
     var dbox = card.querySelector('.decideBox');
 
+    if (act === 'card') {
+      var cbox = card.querySelector('.cardBox');
+      btn.disabled = true;
+      document.fonts.ready.then(function () {
+        var cv = drawDecidedCard(ev);
+        cbox.innerHTML = '';
+        var img = document.createElement('img');
+        img.className = 'dcard';
+        img.alt = '決定カード';
+        img.src = cv.toDataURL('image/png');
+        cbox.appendChild(img);
+        cv.toBlob(function (blob) {
+          var file = new File([blob], 'itsunara-' + ev.id + '.png', { type: 'image/png' });
+          var canShare = !!(navigator.canShare && navigator.canShare({ files: [file] }));
+          var sh = document.createElement('button');
+          sh.className = 'btn btn-primary btn-sm';
+          sh.textContent = canShare ? 'LINEに送る' : '画像を保存';
+          sh.onclick = function () {
+            if (canShare) {
+              navigator.share({ files: [file] }).catch(function () {});
+            } else {
+              var a = document.createElement('a');
+              a.href = URL.createObjectURL(blob);
+              a.download = file.name;
+              a.click();
+            }
+          };
+          var w = document.createElement('div');
+          w.className = 'btns';
+          w.appendChild(sh);
+          cbox.appendChild(w);
+          btn.disabled = false;
+        }, 'image/png');
+      });
+      return;
+    }
+
     if (act === 'reuse') {
       $('title').value = ev.title;
       chips = ev.participants.slice();
@@ -567,24 +677,6 @@
         post({ action: 'decide', id: ev.id, slotKey: sel.value })
           .then(function (res) {
             if (!res || !res.ok) { go.disabled = false; go.textContent = 'この枠で確定する'; msg.textContent = (res && res.error) || '失敗しました'; return; }
-            dbox.innerHTML = '';
-            var l = document.createElement('label');
-            l.className = 'f';
-            l.textContent = '決定のLINE用テキスト';
-            var ta = document.createElement('textarea');
-            ta.readOnly = true;
-            ta.value = decidedText(ev.title, (res.decided && res.decided.label) || '', (res.decided && res.decided.url) || '');
-            ta.id = 'dtext' + i;
-            var cp = document.createElement('button');
-            cp.className = 'btn btn-secondary btn-sm';
-            cp.setAttribute('data-copy', ta.id);
-            cp.textContent = 'コピー';
-            var wrapb = document.createElement('div');
-            wrapb.className = 'btns';
-            wrapb.appendChild(cp);
-            dbox.appendChild(l);
-            dbox.appendChild(ta);
-            dbox.appendChild(wrapb);
             loadList();
           })
           .catch(function (err) {
