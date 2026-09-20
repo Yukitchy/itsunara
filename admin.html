@@ -88,8 +88,8 @@
   .btn-sm { height: 40px; font-size: 14px; padding: 0 14px; background: var(--paper); color: var(--blue); border: 1px solid var(--blue); }
   .btns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
 
-  .presets { display: flex; gap: 8px; }
-  .preset { flex: 1; height: 44px; padding: 0 8px; background: var(--paper); color: var(--blue); border: 1px solid var(--blue); }
+  .presets { display: flex; flex-wrap: wrap; gap: 8px; }
+  .preset { flex: 1 1 calc(33% - 8px); height: 44px; padding: 0 8px; background: var(--paper); color: var(--blue); border: 1px solid var(--blue); }
   .preset.on { background: var(--navy); color: #fff; border-color: var(--navy); }
 
   .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
@@ -151,6 +151,7 @@
         <button class="btn preset" type="button">飲み会</button>
         <button class="btn preset" type="button">打ち合わせ</button>
         <button class="btn preset" type="button">もくもく会</button>
+        <button class="btn preset" type="button">ランチ</button>
       </div>
 
       <label class="f" for="title">タイトル</label>
@@ -206,7 +207,7 @@
         <p><a id="createUrl" target="_blank" rel="noopener"></a></p>
         <label class="f">LINE用テキスト</label>
         <textarea id="createText" readonly></textarea>
-        <div class="btns"><button class="btn btn-secondary" data-copy="createText">コピー</button></div>
+        <div class="btns"><button class="btn btn-primary hidden" id="shareBtn" type="button">LINEに送る</button><button class="btn btn-secondary" data-copy="createText">コピー</button></div>
       </div>
     </div>
 
@@ -390,7 +391,8 @@
     '収録':       { duration: 60,  days: 21, wd: '20:00,21:00',        we: '20:00' },
     '飲み会':     { duration: 120, days: 28, wd: '',                   we: '18:00,19:00' },
     '打ち合わせ': { duration: 30,  days: 14, wd: '12:00,13:00,14:00',  we: '' },
-    'もくもく会': { duration: 240, days: 60, wd: '11:00',              we: '11:00' }
+    'もくもく会': { duration: 240, days: 60, wd: '11:00',              we: '11:00' },
+    'ランチ':     { duration: 120, days: 30, wd: '11:00,13:00',        we: '11:00,13:00' }
   };
   var presetBtns = document.querySelectorAll('.preset');
   Array.prototype.forEach.call(presetBtns, function (b) {
@@ -500,6 +502,7 @@
         $('createUrl').textContent = url;
         $('createUrl').href = url;
         $('createText').value = inviteText(title, url);
+        $('shareBtn').classList.toggle('hidden', !navigator.share);
         // 参加者に「ユウキ」がいれば全枠○を焼き込む（GAS側 adminCreate と同じ挙動）
         var after = Promise.resolve();
         if (participants.indexOf('ユウキ') !== -1) {
@@ -714,11 +717,48 @@
       });
   }
 
+  // ---- LINEに送る（スマホの共有シート。無い環境ではボタン自体を出さない）----
+  $('shareBtn').onclick = function () {
+    navigator.share({ text: $('createText').value }).catch(function () {});
+  };
+
+  // ---- URLで下書きを渡す ----
+  // 例: admin.html?title=美穂さんとランチ&p=ユウキ,美穂さん&duration=120&days=30&wd=11:00,13:00&we=11:00,13:00&link=none&go=1
+  // スマホでこのリンクを開くと項目が埋まった状態で開き、go=1 なら空きも自動で取りに行く。残るのは「発行する」を押すだけ。
+  function applyQuery() {
+    var q = {};
+    location.search.replace(/^\?/, '').split('&').forEach(function (kv) {
+      if (!kv) return;
+      var i = kv.indexOf('=');
+      var k = i < 0 ? kv : kv.slice(0, i), v = i < 0 ? '' : kv.slice(i + 1);
+      try { q[decodeURIComponent(k)] = decodeURIComponent(v.replace(/\+/g, ' ')); } catch (e) { /* 壊れた値は無視 */ }
+    });
+    if (q.title) $('title').value = q.title;
+    if (q.p) {
+      var names = q.p.split(/[,、]/).map(function (x) { return x.trim(); }).filter(Boolean);
+      if (names.length) chips = names.filter(function (n, i) { return names.indexOf(n) === i; });
+    }
+    if (q.duration && Number(q.duration) > 0) $('duration').value = Number(q.duration);
+    if (q.days && Number(q.days) > 0) $('days').value = Number(q.days);
+    if ('wd' in q) $('wdTimes').value = q.wd;
+    if ('we' in q) $('weTimes').value = q.we;
+    if (q.link === 'meet' || q.link === 'fixed' || q.link === 'none') {
+      document.querySelector('input[name=linkType][value=' + q.link + ']').checked = true;
+      $('fixedUrl').classList.toggle('hidden', q.link !== 'fixed');
+    }
+    if (q.url) $('fixedUrl').value = q.url;
+    return { go: q.go === '1' };
+  }
+
   // ---- 起動 ----
   if ('serviceWorker' in navigator) { navigator.serviceWorker.register('./sw.js').catch(function () {}); }
   chips = ['ユウキ'];
+  var draft = applyQuery();
   renderChips();
-  if (bootKey()) loadList();
+  if (bootKey()) {
+    loadList();
+    if (draft.go) runFree();
+  }
 </script>
 </body>
 </html>
