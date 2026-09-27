@@ -139,7 +139,10 @@
   <div id="keyBox" class="card hidden">
     <h3>管理キー</h3>
     <input type="text" id="keyInput" autocomplete="off">
-    <div class="btns"><button class="btn btn-primary btn-block" id="keySave">保存</button></div>
+    <div class="btns">
+      <button class="btn btn-primary btn-block" id="keySave">保存</button>
+      <button class="btn btn-sm hidden" id="keyCancel" type="button">キャンセル</button>
+    </div>
   </div>
 
   <div id="main" class="hidden">
@@ -212,6 +215,8 @@
 
     <h2>過去の調整</h2>
     <div id="list"><p class="sub">読み込み中</p></div>
+
+    <div class="btns"><button class="btn btn-sm" id="keyReset" type="button">管理キーを入れ直す</button></div>
   </div>
 </div>
 </div>
@@ -345,6 +350,18 @@
     $('keyBox').classList.add('hidden');
     $('main').classList.remove('hidden');
     loadList();
+  };
+  // 間違ったキーを保存すると入力欄が二度と出ないので、ここから入れ直せるようにする
+  $('keyReset').onclick = function () {
+    $('keyInput').value = KEY;
+    $('keyCancel').classList.remove('hidden');
+    $('main').classList.add('hidden');
+    $('keyBox').classList.remove('hidden');
+    $('keyInput').focus();
+  };
+  $('keyCancel').onclick = function () {
+    $('keyBox').classList.add('hidden');
+    $('main').classList.remove('hidden');
   };
 
   // ---- 参加者チップ ----
