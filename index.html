@@ -80,6 +80,12 @@
   .sk { background:var(--pebble); border-radius:8px; animation:skp 1.2s ease-in-out infinite; }
   .sk + .sk { margin-top:10px; }
   .sk-title { height:26px; width:70%; }
+  .notelist { margin:0; padding-left:1.2em; line-height:1.7; }
+  .shops { display:grid; grid-template-columns:repeat(3,1fr); gap:12px 10px; }
+  .shop { display:block; text-decoration:none; color:inherit; min-width:0; }
+  .shop img { width:100%; aspect-ratio:1; object-fit:cover; border-radius:12px; display:block; background:#eee; }
+  .shop b { display:block; font-size:13px; line-height:1.3; margin-top:6px; }
+  .shop small { display:block; font-size:11px; line-height:1.4; color:#666; margin-top:2px; }
   .sk-meta { height:14px; width:40%; }
   .sk-h { height:18px; width:35%; }
   .sk-box { height:48px; }
@@ -148,7 +154,7 @@
 
     <div id="noteBox" class="card hidden">
       <h2 id="noteTitle"></h2>
-      <ul id="noteBody" style="margin:0;padding-left:1.2em;line-height:1.7"></ul>
+      <div id="noteBody"></div>
     </div>
   </div>
 </div>
@@ -213,13 +219,26 @@
     if (!lines.length) return;
     var title = lines[0].charAt(0) === '#' ? lines.shift().replace(/^#\s*/, '') : '補足';
     document.getElementById('noteTitle').textContent = title;
-    document.getElementById('noteBody').innerHTML = lines.map(function (l) {
-      var c = l.split('｜');
-      var url = c.length > 1 && /^https?:\/\//.test(c[c.length - 1]) ? c.pop() : '';
-      var name = c.shift();
-      var head = url ? '<a href="' + esc(url) + '" target="_blank" rel="noopener">' + esc(name) + '</a>' : esc(name);
-      return '<li>' + head + (c.length ? '<small style="color:#666"> ' + esc(c.join(' ・ ')) + '</small>' : '') + '</li>';
-    }).join('');
+    var items = lines.map(function (l) {
+      var c = l.split('｜'), url = '', img = '';
+      if (c.length > 1 && /^https?:\/\//.test(c[c.length - 1])) url = c.pop();
+      c = c.filter(function (x) { if (x.indexOf('img=') === 0) { img = x.slice(4); return false; } return true; });
+      return { name: c.shift(), meta: c.join(' ・ '), url: url, img: img };
+    });
+    var box = document.getElementById('noteBody');
+    if (items.some(function (it) { return it.img; })) {
+      box.className = 'shops';
+      box.innerHTML = items.map(function (it) {
+        var tag = it.url ? 'a href="' + esc(it.url) + '" target="_blank" rel="noopener"' : 'div';
+        return '<' + tag + ' class="shop"><img src="' + esc(it.img) + '" alt="" loading="lazy"><b>' + esc(it.name) + '</b><small>' + esc(it.meta) + '</small></' + (it.url ? 'a' : 'div') + '>';
+      }).join('');
+    } else {
+      box.className = 'notelist';
+      box.innerHTML = items.map(function (it) {
+        var head = it.url ? '<a href="' + esc(it.url) + '" target="_blank" rel="noopener">' + esc(it.name) + '</a>' : esc(it.name);
+        return '<li>' + head + (it.meta ? '<small style="color:#666"> ' + esc(it.meta) + '</small>' : '') + '</li>';
+      }).join('');
+    }
     document.getElementById('noteBox').classList.remove('hidden');
   }
 
