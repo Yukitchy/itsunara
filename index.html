@@ -15,149 +15,214 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@500;700&display=swap" rel="stylesheet">
 <style>
-  /* Calendly design system (Refero) : Ink Navy / Signal Blue / Cloud / Pebble / Hairline */
-  :root {
-    --navy:#0b3558; --blue:#006bff; --slate:#476788; --mist:#a6bbd1;
-    --cloud:#f8f9fb; --paper:#ffffff; --pebble:#f0f3f8; --hair:#d4e0ed; --sky:#e6f0ff; --cobalt:#004eba;
-    --shadow: rgba(71,103,136,0.04) 0 4px 5px, rgba(71,103,136,0.03) 0 8px 15px, rgba(71,103,136,0.08) 0 30px 50px;
-  }
-  * { box-sizing:border-box; }
-  html, body { overflow-x:hidden; }
-  body { margin:0; background:var(--cloud); color:var(--navy); font-family:"Manrope","Zen Kaku Gothic New",system-ui,-apple-system,sans-serif; font-weight:500; line-height:1.5; -webkit-text-size-adjust:100%; }
-  .wrap { max-width:480px; margin:0 auto; padding:16px 16px 64px; }
-  @media (min-width:768px) { .wrap { max-width:640px; padding-top:32px; } }
+  :root { --navy:#0b3558; --blue:#006bff; --slate:rgba(11,53,88,.75); --faint:rgba(11,53,88,.68); --pebble:rgba(11,53,88,.06); --cobalt:#0b3558; --s1:rgba(0,107,255,.16); --s2:rgba(0,107,255,.39); --s3:rgba(0,107,255,.67); --rule:rgba(11,53,88,.12); --focus:#006bff; }
+  *, *::before, *::after { box-sizing:border-box; word-break:auto-phrase; line-break:strict; }
+  body { margin:0; background:#fff; color:var(--navy); font-family:"Manrope","Zen Kaku Gothic New",system-ui,-apple-system,sans-serif; font-weight:500; font-size:15px; line-height:1.6; -webkit-text-size-adjust:100%; overflow-wrap:anywhere; font-variant-numeric:tabular-nums; -webkit-font-smoothing:antialiased; }
+  h1, h2, h3, .btn, .hint { text-wrap:balance; }
+  p { text-wrap:pretty; }
+  :focus-visible { outline:3px solid var(--focus); outline-offset:2px; }
   .hidden { display:none !important; }
-  .brand { display:block; height:36px; width:auto; margin:6px 0 16px; }
-  .card { background:var(--paper); border-radius:16px; box-shadow:var(--shadow); padding:20px; margin-bottom:16px; }
-  h1 { font-size:24px; font-weight:700; line-height:1.25; margin:0 0 6px; overflow-wrap:anywhere; }
-  h2 { font-size:16px; font-weight:700; margin:0 0 12px; }
-  .meta { color:var(--slate); font-size:14px; }
-  .sub { color:var(--slate); font-size:14px; }
+  .wrap { max-width:520px; margin:0 auto; padding:16px 16px 72px; }
+  @media (min-width:768px) { .wrap { max-width:600px; padding-top:32px; } }
+  .brand { display:block; height:28px; width:auto; margin:4px 0 20px; }
+  h1 { font-size:30px; font-weight:700; line-height:1.3; margin:0 0 4px; }
+  h2 { font-size:18px; font-weight:700; line-height:1.4; margin:0 0 12px; }
+  .meta { color:var(--slate); font-size:14px; margin:0 0 24px; }
+  .hint { color:var(--slate); font-size:14px; margin:8px 0 0; }
+  .lab { display:block; font-size:14px; font-weight:700; margin:0 0 8px; }
 
-  #whoText { width:100%; box-sizing:border-box; height:48px; padding:0 12px; border:1px solid var(--hair); border-radius:8px; font:inherit; font-size:16px; color:var(--navy); background:var(--paper); margin-bottom:10px; }
+  /* 名前 */
+  .who { margin-bottom:24px; }
+  #whoText { width:100%; height:48px; padding:0 12px; border:1px solid rgba(11,53,88,.2); border-radius:8px; font:inherit; font-size:16px; color:var(--navy); background:#fff; }
   #whoText:focus { outline:none; border-color:var(--blue); }
-  .names { display:flex; flex-wrap:wrap; gap:8px; }
-  .names button { min-height:48px; padding:0 16px; border:1px solid var(--blue); border-radius:8px; background:#fff; color:var(--blue); font:inherit; font-weight:600; font-size:15px; cursor:pointer; }
-  .names button.sel { background:var(--navy); border-color:var(--navy); color:#fff; }
+  #whoText:focus-visible { outline:3px solid var(--focus); outline-offset:1px; }
+  .names { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+  .names button { min-height:44px; padding:0 16px; border:0; border-radius:8px; background:var(--pebble); color:var(--navy); font:inherit; font-weight:700; font-size:15px; cursor:pointer; }
+  .names button.sel { background:var(--navy); color:#fff; }
 
-  .slot { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 0; border-top:1px solid var(--hair); }
-  .slot:first-child { border-top:none; padding-top:0; }
-  .slot .lab { font-weight:700; font-size:15px; line-height:1.3; }
-  .slot .lab small { display:block; font-weight:500; font-size:13px; color:var(--slate); }
+  /* 自分/みんな */
+  .tabs { display:flex; gap:4px; padding:4px; background:var(--pebble); border-radius:10px; margin-bottom:20px; }
+  .tabs button { flex:1; height:44px; border:0; border-radius:8px; background:transparent; color:var(--slate); font:inherit; font-weight:700; font-size:15px; cursor:pointer; }
+  .tabs button.on { background:#fff; color:var(--navy); }
+
+  /* カレンダー */
+  .mhead { display:flex; align-items:flex-end; justify-content:space-between; gap:12px; margin-bottom:8px; }
+  .mtitle { display:flex; align-items:baseline; gap:6px; }
+  .mnum { font-size:60px; font-weight:700; line-height:1; letter-spacing:-.01em; }
+  .mun { font-size:20px; font-weight:700; }
+  .myear { font-size:14px; color:var(--slate); margin-left:6px; }
+  .mnav { display:flex; gap:4px; }
+  .mnav button { width:44px; height:44px; border:0; border-radius:8px; background:var(--pebble); color:var(--navy); cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0; }
+  .mnav button:disabled { opacity:.35; cursor:default; }
+  .dow, .grid { display:grid; grid-template-columns:repeat(7, minmax(0,1fr)); gap:4px; }
+  .dow span { text-align:center; font-size:13px; font-weight:700; color:var(--slate); padding:6px 0; }
+  .cell { position:relative; display:flex; align-items:center; justify-content:center; min-height:44px; aspect-ratio:1; border-radius:8px; font:inherit; font-size:16px; font-weight:700; color:var(--faint); background:transparent; border:0; padding:0; }
+  button.cell { background:var(--pebble); color:var(--navy); cursor:pointer; }
+  .cell.today::after { content:""; position:absolute; left:50%; bottom:5px; width:4px; height:4px; margin-left:-2px; border-radius:50%; background:currentColor; }
+  .cell.today:not(.cand) { color:var(--navy); }
+  button.cell.sel { background:var(--navy); color:#fff; }
+  .mk { position:absolute; right:5px; bottom:5px; width:7px; height:7px; border-radius:50%; }
+  .mk.part { border:2px solid var(--slate); }
+  .mk.done { background:var(--blue); }
+  button.cell.sel .mk.part { border-color:#fff; }
+  button.cell.sel .mk.done { background:rgba(0,107,255,.59); }
+  /* みんなの回答: 濃淡 */
+  .heat button.cell.h1 { background:var(--s1); }
+  .heat button.cell.h2 { background:var(--s2); }
+  .heat button.cell.h3 { background:var(--s3); color:#fff; }
+  .heat button.cell.hall { background:var(--blue); color:#fff; }
+  .heat button.cell.sel { box-shadow:inset 0 0 0 3px var(--navy); }
+  /* 決定後: 決定日だけ青ベタ */
+  .fixed .cell.cand { background:rgba(11,53,88,.035); color:var(--faint); }
+  .fixed .cell.dec { background:var(--blue); color:#fff; }
+
+  .panel { margin-top:20px; }
+  .slotrow { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 0; }
+  .slotrow + .slotrow { border-top:1px solid var(--rule); }
+  .slotrow .tm { font-size:17px; font-weight:700; line-height:1.3; }
   .seg { display:flex; gap:6px; flex:none; }
-  .seg button { width:48px; height:44px; border:1px solid var(--hair); border-radius:8px; background:#fff; color:var(--mist); font:inherit; font-weight:700; font-size:18px; cursor:pointer; padding:0; }
-  .seg button.ok.on { background:var(--blue); border-color:var(--blue); color:#fff; }
-  .seg button.tri.on { background:var(--sky); border-color:var(--blue); color:var(--cobalt); }
-  .seg button.no.on { background:var(--pebble); border-color:var(--pebble); color:var(--slate); }
+  .seg button { width:56px; height:48px; border:0; border-radius:8px; background:var(--pebble); color:var(--slate); font:inherit; font-weight:700; font-size:20px; cursor:pointer; padding:0; }
+  .seg button.ok.on { background:var(--blue); color:#fff; }
+  .seg button.tri.on { background:var(--s1); color:var(--cobalt); }
+  .seg button.no.on { background:var(--slate); color:#fff; }
 
-  textarea { width:100%; border:1px solid var(--hair); border-radius:8px; background:#fff; padding:12px; font:inherit; font-size:15px; color:var(--navy); min-height:64px; resize:vertical; }
-  textarea::placeholder { color:var(--mist); }
-  .btn { display:block; width:100%; height:52px; border:none; border-radius:8px; background:var(--blue); color:#fff; font:inherit; font-weight:600; font-size:17px; cursor:pointer; text-align:center; line-height:52px; text-decoration:none; }
-  .btn:disabled { background:var(--mist); cursor:default; }
-  .btn-navy { background:var(--navy); }
-  .btn-sub { background:#fff; color:var(--blue); border:1px solid var(--blue); line-height:50px; }
-  .help { font-size:13px; color:var(--slate); margin:8px 0 0; }
+  textarea { width:100%; border:1px solid rgba(11,53,88,.2); border-radius:8px; background:#fff; padding:12px; font:inherit; font-size:16px; color:var(--navy); min-height:72px; resize:vertical; }
+  textarea::placeholder { color:var(--faint); }
+  .save { margin-top:20px; padding-top:20px; border-top:1px solid var(--rule); }
+  .btn { display:block; width:100%; min-height:52px; border:0; border-radius:8px; background:var(--blue); color:#fff; font:inherit; font-weight:700; font-size:17px; cursor:pointer; text-align:center; line-height:52px; text-decoration:none; }
+  .btn:disabled { background:rgba(11,53,88,.28); cursor:default; }
+  .btn-sub { background:var(--pebble); color:var(--navy); }
+  .btn + .btn { margin-top:10px; }
+
+  /* みんな: 星取表 */
+  .tbl { width:100%; border-collapse:collapse; font-size:14px; }
+  .tbl th { text-align:center; font-weight:700; color:var(--slate); font-size:13px; padding:8px 6px; white-space:nowrap; }
+  .tbl th.l { text-align:left; }
+  .tbl th.me { color:var(--blue); }
+  .tbl td { text-align:center; padding:10px 6px; font-weight:700; font-size:18px; }
+  .tbl td.l { text-align:left; font-size:15px; }
+  .tbl tr + tr td { border-top:1px solid var(--rule); }
+  .tbl tr.all td { background:var(--blue); color:#fff; border-top-color:var(--blue); }
+  .tbl tr.all td:first-child { border-radius:8px 0 0 8px; }
+  .tbl tr.all td:last-child { border-radius:0 8px 8px 0; }
+  .o { color:var(--blue); } .t { color:var(--cobalt); } .x { color:var(--faint); } .n { color:var(--faint); }
+  .tbl tr.all .o, .tbl tr.all .t, .tbl tr.all .x, .tbl tr.all .n { color:#fff; }
+  .tblscroll { overflow-x:auto; }
+  .legend { color:var(--slate); font-size:13px; margin:12px 0 0; }
+
+  /* 集計と決定 */
+  .complete { margin:24px 0 0; padding:16px; border-radius:12px; background:var(--pebble); }
+  .complete h2 { font-size:16px; margin-bottom:8px; }
   .ok-line { color:var(--blue); font-weight:700; font-size:17px; line-height:1.4; margin-bottom:4px; }
-  .ok-none { color:var(--slate); font-size:15px; line-height:1.5; }
+  .ok-none { color:var(--slate); font-size:15px; }
+  .complete .btn { margin-top:12px; }
+  .decided { margin:20px 0 0; }
+  .decided h2 { font-size:18px; color:var(--blue); margin-bottom:0; }
+  #decidedWhen { font-size:64px; font-weight:700; line-height:1.1; letter-spacing:-.01em; margin:4px 0 20px; }
+  #decidedWhen small { display:block; font-size:20px; font-weight:700; letter-spacing:0; margin-top:6px; color:var(--navy); }
 
-  .table-wrap { overflow-x:auto; margin:0 -4px; }
-  table { width:100%; border-collapse:collapse; font-size:14px; }
-  th { text-align:center; font-weight:600; color:var(--slate); font-size:12px; padding:8px 4px; border-bottom:1px solid var(--hair); white-space:nowrap; }
-  th.l { text-align:left; }
-  th.me { color:var(--blue); }
-  td { text-align:center; padding:10px 4px; border-bottom:1px solid var(--hair); font-weight:700; font-size:18px; }
-  td.l { text-align:left; font-size:14px; line-height:1.3; }
-  td.l small { display:block; font-weight:500; font-size:12px; color:var(--slate); }
-  tr.all td { background:var(--sky); }
-  tr.all td:first-child { border-radius:8px 0 0 8px; } tr.all td:last-child { border-radius:0 8px 8px 0; }
-  .o { color:var(--blue); } .t { color:var(--cobalt); opacity:.6; } .x { color:var(--mist); } .n { color:var(--hair); }
-  .badge { display:inline-block; background:var(--blue); color:#fff; font-size:11px; font-weight:600; padding:1px 8px; border-radius:50px; margin-top:3px; }
+  /* お店 */
+  .note { margin-top:40px; }
+  .shops { display:flex; gap:12px; overflow-x:auto; scroll-snap-type:x proximity; scroll-padding:0 16px; margin:0 -16px; padding:0 16px 8px; }
+  .shop { flex:none; width:140px; display:block; text-decoration:none; color:inherit; scroll-snap-align:start; }
+  .shop img { display:block; width:140px; height:140px; object-fit:cover; border-radius:12px; background:var(--pebble); }
+  .shop .st { display:block; }
+  .shop .sn { display:none; }
+  .shop b { display:block; font-size:14px; line-height:1.4; margin-top:8px; }
+  .shop small { display:block; font-size:13px; line-height:1.45; color:var(--slate); margin-top:2px; }
+  .notelist { margin:0; padding-left:1.2em; line-height:1.7; }
+  .notelist small { color:var(--slate); font-size:13px; }
 
-  .decided h2 { font-size:22px; margin-bottom:4px; }
-  .decided .when { font-size:18px; font-weight:700; margin:8px 0 14px; }
-  .decided .when small { display:block; font-weight:500; font-size:14px; color:var(--slate); }
   .closed { text-align:center; padding:48px 0; color:var(--slate); }
   .sk { background:var(--pebble); border-radius:8px; animation:skp 1.2s ease-in-out infinite; }
   .sk + .sk { margin-top:10px; }
-  .sk-title { height:26px; width:70%; }
-  .notelist { margin:0; padding-left:1.2em; line-height:1.7; }
-  .shops { display:grid; grid-template-columns:repeat(3,1fr); gap:12px 10px; }
-  .shop { display:block; text-decoration:none; color:inherit; min-width:0; }
-  .shop img { width:100%; aspect-ratio:1; object-fit:cover; border-radius:12px; display:block; background:#eee; }
-  .shop b { display:block; font-size:13px; line-height:1.3; margin-top:6px; }
-  .shop small { display:block; font-size:11px; line-height:1.4; color:#666; margin-top:2px; }
-  .sk-meta { height:14px; width:40%; }
-  .sk-h { height:18px; width:35%; }
-  .sk-box { height:48px; }
-  .sk-row { height:40px; }
   @keyframes skp { 0%,100% { opacity:1; } 50% { opacity:.45; } }
-  @media (prefers-reduced-motion: reduce) { .sk { animation:none; } }
   .toast { position:fixed; left:50%; bottom:24px; transform:translateX(-50%); background:var(--navy); color:#fff; padding:10px 18px; border-radius:8px; font-size:14px; opacity:0; transition:opacity .2s; pointer-events:none; }
   .toast.show { opacity:1; }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation:none !important; transition:none !important; scroll-behavior:auto !important; } }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <img class="brand" src="./wordmark.png" alt="いつなら？">
+<main class="wrap">
+  <img class="brand" src="./wordmark.png" alt="いつなら？" width="81" height="28">
 
   <div id="skeleton" aria-hidden="true">
-    <div class="card"><div class="sk sk-title"></div><div class="sk sk-meta"></div></div>
-    <div class="card"><div class="sk sk-h"></div><div class="sk sk-box"></div></div>
-    <div class="card"><div class="sk sk-h"></div><div class="sk sk-row"></div><div class="sk sk-row"></div><div class="sk sk-row"></div></div>
+    <div class="sk" style="height:38px;width:70%"></div>
+    <div class="sk" style="height:16px;width:40%"></div>
+    <div class="sk" style="height:48px"></div>
+    <div class="sk" style="height:300px"></div>
   </div>
 
-  <div id="closedBox" class="card closed hidden">この調整は終了しました</div>
+  <div id="closedBox" class="closed hidden">この調整は終了しました</div>
 
   <div id="main" class="hidden">
-    <div class="card">
-      <h1 id="title"></h1>
-      <div class="meta" id="meta"></div>
-    </div>
-
-    <div id="completeBox" class="card hidden">
-      <h2>全員の回答がそろいました</h2>
-      <div id="completeBody"></div>
-      <p class="help">ユウキが枠を確定すると、ここに決定が表示されます</p>
-      <button class="btn btn-sub" id="copyBtn" type="button" style="margin-top:14px">結果をコピー</button>
-    </div>
-
-    <div id="decidedBox" class="card decided hidden">
-      <h2>決まりました</h2>
-      <div class="when" id="decidedWhen"></div>
-      <a id="decidedLink" class="btn hidden" target="_blank" rel="noopener">リンクを開く</a>
-      <a id="decidedCal" class="btn btn-sub hidden" target="_blank" rel="noopener" style="margin-top:10px">自分のGoogleカレンダーに追加</a>
-    </div>
+    <h1 id="title"></h1>
+    <p class="meta" id="meta"></p>
 
     <div id="voteArea" class="hidden">
-      <div class="card">
-        <h2>あなたの名前</h2>
+      <div class="who">
+        <label class="lab" for="whoText">あなたの名前</label>
         <input id="whoText" type="text" placeholder="名前を入力" autocomplete="name">
         <div class="names" id="who"></div>
       </div>
-      <div id="markArea" class="hidden">
-        <div class="card">
-          <h2>各候補に ○ △ × をつける</h2>
-          <div id="slots"></div>
+    </div>
+
+    <div id="tabs" class="tabs" role="tablist">
+      <button type="button" data-v="mine" class="on" role="tab">自分の回答</button>
+      <button type="button" data-v="all" role="tab">みんなの回答</button>
+    </div>
+
+    <div id="calBox">
+      <div class="mhead">
+        <div class="mtitle"><span class="mnum" id="mnum"></span><span class="mun">月</span><span class="myear" id="myear"></span></div>
+        <div class="mnav" id="mnav">
+          <button type="button" id="mprev" aria-label="前の月"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.5 4.5 7 10l5.5 5.5"/></svg></button>
+          <button type="button" id="mnext" aria-label="次の月"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 4.5 13 10l-5.5 5.5"/></svg></button>
         </div>
-        <div class="card">
-          <textarea id="comment" placeholder="ひとこと（任意）"></textarea>
+      </div>
+      <div class="dow" aria-hidden="true"><span>月</span><span>火</span><span>水</span><span>木</span><span>金</span><span>土</span><span>日</span></div>
+      <div class="grid" id="grid"></div>
+    </div>
+
+    <div id="mineWrap" class="panel">
+      <h2 id="dayTitle"></h2>
+      <p class="hint hidden" id="nameHint">名前を選ぶと、日にちごとに回答できます</p>
+      <div id="markArea" class="hidden">
+        <div id="dayRows"></div>
+        <div class="save">
+          <textarea id="comment" placeholder="ひとこと（任意）" aria-label="ひとこと"></textarea>
           <button class="btn" id="saveBtn" disabled style="margin-top:12px">送信する</button>
-          <p class="help" id="saveHelp">すべての候補に印をつけると送信できます</p>
+          <p class="hint" id="saveHelp">すべての候補に印をつけると送信できます</p>
         </div>
       </div>
     </div>
 
-    <div id="listBox" class="card hidden">
-      <h2>みんなの回答 <span class="sub" id="pending" style="font-weight:500;margin-left:6px"></span></h2>
-      <div class="table-wrap" id="matrix"></div>
+    <div id="allWrap" class="panel hidden">
+      <h2 id="allTitle"></h2>
+      <div class="tblscroll" id="matrix"></div>
+      <p class="legend">青が濃い日ほど、その日の最良の枠で○を付けた人が多い日です。青ベタは全員○。</p>
+      <p class="legend" id="pending"></p>
     </div>
 
-    <div id="noteBox" class="card hidden">
+    <div id="completeBox" class="complete hidden">
+      <h2>全員の回答がそろいました</h2>
+      <div id="completeBody"></div>
+      <button class="btn btn-sub" id="copyBtn" type="button">結果をコピー</button>
+    </div>
+
+    <div id="decidedBox" class="decided hidden">
+      <h2>決まりました</h2>
+      <div id="decidedWhen"></div>
+      <a id="decidedCal" class="btn hidden" target="_blank" rel="noopener">カレンダーに追加</a>
+      <a id="decidedLink" class="btn btn-sub hidden" target="_blank" rel="noopener">リンクを開く</a>
+    </div>
+
+    <div id="noteBox" class="note hidden">
       <h2 id="noteTitle"></h2>
       <div id="noteBody"></div>
     </div>
   </div>
-</div>
+</main>
 <div class="toast" id="toast"></div>
 
 <script src="./config.js?v=2"></script>
@@ -168,7 +233,10 @@
   var VOTES = [];
   var SUMMARY = null;
   var WD = ['日','月','火','水','木','金','土'];
+  var WDL = ['日曜日','月曜日','火曜日','水曜日','木曜日','金曜日','土曜日'];
+  var DEMO = /[?&]demo=decided(&|$)/.test(location.search);
 
+  function $(id) { return document.getElementById(id); }
   function esc(s) {
     return String(s).replace(/[&<>"]/g, function (c) {
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
@@ -185,11 +253,40 @@
                  time: pad2(s.getHours()) + ':' + pad2(s.getMinutes()) + (e && !isNaN(e.getTime()) ? '〜' + pad2(e.getHours()) + ':' + pad2(e.getMinutes()) : '') };
       }
     }
-    var m = /^\s*(\d{1,2}\/\d{1,2}\s*(?:\([日月火水木金土]\))?)\s*(\d{1,2}:\d{2}(?:\s*[–\-〜~]\s*\d{1,2}:\d{2})?)?/.exec((slot && slot.label) || '');
-    if (m && m[2]) return { date: m[1].replace(/\s+/g, ''), time: m[2].replace(/\s*[–\-~]\s*/, '〜') };
+    var m = /^\s*(\d{1,2}\/\d{1,2}\s*(?:\([日月火水木金土]\))?)\s*(\d{1,2}:\d{2}(?:\s*[\u2013\-〜~]\s*\d{1,2}:\d{2})?)?/.exec((slot && slot.label) || '');
+    if (m && m[2]) return { date: m[1].replace(/\s+/g, ''), time: m[2].replace(/\s*[\u2013\-~]\s*/, '〜') };
     return null;
   }
   function slotLabel(slot) { var p = parts(slot); return p ? p.date + ' ' + p.time : (slot ? slot.label : ''); }
+
+  // 日付の部品。カレンダーや時刻表の組み立て用（データ処理は parts のまま）
+  function dayOf(slot) {
+    var p = parts(slot);
+    var m = /^(\d{1,2})\/(\d{1,2})(?:\(([日月火水木金土])\))?/.exec(p ? p.date : '');
+    if (!m) return null;
+    var y = new Date().getFullYear();
+    if (slot.start) { var s = new Date(slot.start); if (!isNaN(s.getTime())) y = s.getFullYear(); }
+    var mo = +m[1], d = +m[2];
+    return { key: mo + '/' + d, y: y, m: mo, d: d, wd: m[3] || WD[new Date(y, mo - 1, d).getDay()] };
+  }
+  function timeOf(slot) { var p = parts(slot); return p ? p.time : (slot ? slot.label : ''); }
+  function startOf(slot) { return timeOf(slot).split('〜')[0]; }
+  function endOf(slot) { return timeOf(slot).split('〜')[1] || ''; }
+  function groupDays() {
+    var map = {}, list = [];
+    EVENT.slots.forEach(function (s) {
+      var d = dayOf(s), k = d ? d.key : 'x' + s.key;
+      if (!map[k]) { map[k] = { key: k, info: d, slots: [] }; list.push(map[k]); }
+      map[k].slots.push(s);
+    });
+    list.sort(function (a, b) {
+      if (!a.info || !b.info) return 0;
+      return (a.info.y * 10000 + a.info.m * 100 + a.info.d) - (b.info.y * 10000 + b.info.m * 100 + b.info.d);
+    });
+    return list;
+  }
+  function slotByKey(k) { return EVENT.slots.filter(function (s) { return s.key === k; })[0]; }
+  function mkClass(m) { return m === '○' ? 'o' : m === '△' ? 't' : m === '×' ? 'x' : 'n'; }
 
   function computeMatrix(votes, participants, slots) {
     return slots.map(function (slot) {
@@ -204,13 +301,20 @@
       return { key: slot.key, label: slot.label, cells: cells, allOk: allOk };
     });
   }
+  function allNames() {
+    var names = [];
+    VOTES.forEach(function (v) { if (v.name && names.indexOf(v.name) === -1) names.push(v.name); });
+    EVENT.participants.forEach(function (n) { if (names.indexOf(n) === -1) names.push(n); });
+    return names;
+  }
+  function matrix() { return computeMatrix(VOTES, allNames(), EVENT.slots); }
 
   function renderMeta() {
     var m = EVENT.meta || {};
     var bits = [EVENT.participants.length + '人'];
     if (m.duration) bits.push(m.duration + '分');
     bits.push(EVENT.slots.length + '候補');
-    document.getElementById('meta').textContent = bits.join(' ・ ');
+    $('meta').textContent = bits.join(' ・ ');
   }
 
   function renderNote() {
@@ -218,32 +322,32 @@
     var lines = note.split('\n').map(function (l) { return l.trim(); }).filter(Boolean);
     if (!lines.length) return;
     var title = lines[0].charAt(0) === '#' ? lines.shift().replace(/^#\s*/, '') : '補足';
-    document.getElementById('noteTitle').textContent = title;
+    $('noteTitle').textContent = title;
     var items = lines.map(function (l) {
       var c = l.split('｜'), url = '', img = '';
       if (c.length > 1 && /^https?:\/\//.test(c[c.length - 1])) url = c.pop();
       c = c.filter(function (x) { if (x.indexOf('img=') === 0) { img = x.slice(4); return false; } return true; });
       return { name: c.shift(), meta: c.join(' ・ '), url: url, img: img };
     });
-    var box = document.getElementById('noteBody');
+    var box = $('noteBody');
     if (items.some(function (it) { return it.img; })) {
       box.className = 'shops';
-      box.innerHTML = items.map(function (it) {
+      box.innerHTML = items.map(function (it, i) {
         var tag = it.url ? 'a href="' + esc(it.url) + '" target="_blank" rel="noopener"' : 'div';
-        return '<' + tag + ' class="shop"><img src="' + esc(it.img) + '" alt="" loading="lazy"><b>' + esc(it.name) + '</b><small>' + esc(it.meta) + '</small></' + (it.url ? 'a' : 'div') + '>';
+        return '<' + tag + ' class="shop"><img src="' + esc(it.img) + '" alt="" loading="lazy"><span class="st"><i class="sn">' + (i + 1) + '</i><b>' + esc(it.name) + '</b><small>' + esc(it.meta) + '</small></span></' + (it.url ? 'a' : 'div') + '>';
       }).join('');
     } else {
       box.className = 'notelist';
       box.innerHTML = items.map(function (it) {
         var head = it.url ? '<a href="' + esc(it.url) + '" target="_blank" rel="noopener">' + esc(it.name) + '</a>' : esc(it.name);
-        return '<li>' + head + (it.meta ? '<small style="color:#666"> ' + esc(it.meta) + '</small>' : '') + '</li>';
+        return '<li>' + head + (it.meta ? '<small> ' + esc(it.meta) + '</small>' : '') + '</li>';
       }).join('');
     }
-    document.getElementById('noteBox').classList.remove('hidden');
+    $('noteBox').classList.remove('hidden');
   }
 
   function renderWho() {
-    var box = document.getElementById('who');
+    var box = $('who');
     box.innerHTML = '';
     EVENT.participants.forEach(function (name) {
       var b = document.createElement('button');
@@ -252,7 +356,7 @@
       b.onclick = function () { selectMe(name, b); };
       box.appendChild(b);
     });
-    var text = document.getElementById('whoText');
+    var text = $('whoText');
     if (text && !text.dataset.wired) {
       text.dataset.wired = '1';
       text.addEventListener('input', function () { selectMe(text.value, null); });
@@ -265,91 +369,47 @@
     myName = name;
     Array.prototype.forEach.call(document.querySelectorAll('#who button'), function (x) { x.classList.remove('sel'); });
     if (btn) btn.classList.add('sel');
-    var box = document.getElementById('whoText');
+    var box = $('whoText');
     if (box && box.value !== name) box.value = name;
-    document.getElementById('markArea').classList.toggle('hidden', !name);
     prefill();
-    renderSlots();
+    onWho(btn);
     renderList(VOTES);
     checkSave();
   }
 
-  function renderSlots() {
-    var box = document.getElementById('slots');
-    box.innerHTML = '';
-    EVENT.slots.forEach(function (slot) {
-      var p = parts(slot);
-      var row = document.createElement('div');
-      row.className = 'slot';
-      var lab = document.createElement('div');
-      lab.className = 'lab';
-      lab.innerHTML = p ? esc(p.date) + '<small>' + esc(p.time) + '</small>' : esc(slot.label);
-      var seg = document.createElement('div');
-      seg.className = 'seg';
-      [['○', 'ok'], ['△', 'tri'], ['×', 'no']].forEach(function (pair) {
-        var b = document.createElement('button');
-        b.type = 'button';
-        b.className = pair[1] + (myMarks[slot.key] === pair[0] ? ' on' : '');
-        b.textContent = pair[0];
-        b.setAttribute('aria-label', slotLabel(slot) + ' ' + pair[0]);
-        b.onclick = function () {
-          myMarks[slot.key] = pair[0];
-          Array.prototype.forEach.call(seg.children, function (x) { x.classList.toggle('on', x === b); });
-          checkSave();
-        };
-        seg.appendChild(b);
-      });
-      row.appendChild(lab);
-      row.appendChild(seg);
-      box.appendChild(row);
-    });
+  function setMark(key, mark) {
+    myMarks[key] = mark;
+    checkSave();
+    onMark(key);
   }
 
   function prefill() {
     VOTES.forEach(function (v) {
       if (v.name !== myName) return;
       myMarks[v.slotKey] = v.mark;
-      if (v.comment) document.getElementById('comment').value = v.comment;
+      if (v.comment) $('comment').value = v.comment;
     });
   }
 
   function checkSave() {
     var all = EVENT.slots.every(function (s) { return myMarks[s.key]; });
     var ok = !!(myName && all);
-    document.getElementById('saveBtn').disabled = !ok;
-    document.getElementById('saveHelp').classList.toggle('hidden', ok);
+    $('saveBtn').disabled = !ok;
+    $('saveHelp').classList.toggle('hidden', ok);
   }
 
   function renderList(votes) {
     VOTES = votes || [];
-    var names = [];
-    VOTES.forEach(function (v) { if (v.name && names.indexOf(v.name) === -1) names.push(v.name); });
-    EVENT.participants.forEach(function (n) { if (names.indexOf(n) === -1) names.push(n); });
     var pending = EVENT.participants.filter(function (n) { return !VOTES.some(function (v) { return v.name === n; }); });
-    document.getElementById('pending').textContent = pending.length ? '未回答: ' + pending.join('、') : '全員回答済み';
-
-    var rows = computeMatrix(VOTES, names, EVENT.slots);
-    var html = '<table><thead><tr><th class="l">候補</th>';
-    names.forEach(function (n) { html += '<th' + (n === myName ? ' class="me"' : '') + '>' + esc(n) + '</th>'; });
-    html += '</tr></thead><tbody>';
-    rows.forEach(function (r) {
-      var slot = EVENT.slots.filter(function (s) { return s.key === r.key; })[0];
-      var p = parts(slot);
-      html += '<tr' + (r.allOk ? ' class="all"' : '') + '><td class="l">' + (p ? esc(p.date) + '<small>' + esc(p.time) + '</small>' : esc(slot.label)) + (r.allOk ? '<span class="badge">全員○</span>' : '') + '</td>';
-      r.cells.forEach(function (c) {
-        var cls = c.mark === '○' ? 'o' : c.mark === '△' ? 't' : c.mark === '×' ? 'x' : 'n';
-        html += '<td class="' + cls + '">' + (c.mark || '－') + '</td>';
-      });
-      html += '</tr>';
-    });
-    html += '</tbody></table>';
-    document.getElementById('matrix').innerHTML = html;
+    var pe = $('pending');
+    if (pe) pe.textContent = pending.length ? '未回答: ' + pending.join('、') : '全員回答済み';
+    drawList();
   }
 
   // 全員そろった時のカード。summary は API の返却をそのまま使う（表側で再計算しない）
   function renderComplete(sum) {
     SUMMARY = sum || null;
-    var box = document.getElementById('completeBox');
+    var box = $('completeBox');
     if (!SUMMARY || !SUMMARY.allAnswered || EVENT.status !== 'open') { box.classList.add('hidden'); return; }
     var html;
     if (SUMMARY.allOk.length) {
@@ -358,7 +418,7 @@
       html = '<div class="ok-none">全員○の枠はありません</div>';
       if (SUMMARY.okOrMaybe.length) html += '<div class="ok-none">△を含めると: ' + esc(joinLabels(SUMMARY.okOrMaybe)) + '</div>';
     }
-    document.getElementById('completeBody').innerHTML = html;
+    $('completeBody').innerHTML = html;
     box.classList.remove('hidden');
   }
 
@@ -403,7 +463,7 @@
   }
 
   function toast(msg) {
-    var t = document.getElementById('toast');
+    var t = $('toast');
     t.textContent = msg;
     t.classList.add('show');
     setTimeout(function () { t.classList.remove('show'); }, 2000);
@@ -417,10 +477,10 @@
   }
 
   function save() {
-    var btn = document.getElementById('saveBtn');
+    var btn = $('saveBtn');
     btn.disabled = true;
     btn.textContent = '送信中';
-    post({ action: 'submit', id: EVENT.id, name: myName, marks: myMarks, comment: document.getElementById('comment').value })
+    post({ action: 'submit', id: EVENT.id, name: myName, marks: myMarks, comment: $('comment').value })
       .then(function (res) {
         btn.textContent = '送信する';
         if (res && res.ok) { renderList(res.votes); renderComplete(res.summary); toast('送信しました'); }
@@ -436,18 +496,17 @@
 
   function message(text) {
     hideSkeleton();
-    var b = document.getElementById('closedBox');
+    var b = $('closedBox');
     b.textContent = text;
     b.classList.remove('hidden');
   }
 
   function hideSkeleton() {
-    var sk = document.getElementById('skeleton');
+    var sk = $('skeleton');
     if (sk) sk.remove();
   }
 
   // 前回この端末で見た内容。あれば即座に描いて、裏で最新を取り直す。
-  // GAS は速くても1秒前後かかるので、2回目以降は待ち時間ゼロで中身が出る。
   function cacheKey(id) { return 'itsunara:v1:' + id; }
 
   function readCache(id) {
@@ -472,7 +531,7 @@
   function failed(hadContent) {
     if (hadContent) return;               // 古い内容が出ているなら黙って諦める
     hideSkeleton();
-    var b = document.getElementById('closedBox');
+    var b = $('closedBox');
     b.innerHTML = '';
     b.appendChild(document.createTextNode('読み込めませんでした。電波の良いところでもう一度お試しください。'));
     var btn = document.createElement('button');
@@ -499,13 +558,18 @@
     function render(res, isLive) {
       if (!res || !res.ok || !res.event) return;
       if (!isLive && shown) return;          // 速報は空の画面を埋めるときだけ
+      // 決定画面の見本用: ?demo=decided の時だけ3番目の枠を決定済みにして描く
+      if (DEMO && res.event.slots && res.event.slots[2]) {
+        res.event.status = 'decided';
+        res.event.decided = { slotKey: res.event.slots[2].key };
+      }
       hideSkeleton();
       EVENT = res.event;
       // 名前を入れて記入中なら画面を作り直さず、表だけ静かに更新する
       if (shown && myName) { renderList(res.votes || []); renderComplete(res.summary); }
       else { start(res.votes || [], res.summary); }
       shown = true;
-      if (isLive) { live = true; writeCache(id, res); }
+      if (isLive) { live = true; if (!DEMO) writeCache(id, res); }
     }
 
     render(readCache(id), false);            // ① 前にこの端末で見た内容
@@ -532,9 +596,8 @@
   function start(votes, summary) {
     if (EVENT.status === 'closed') { message('この調整は終了しました'); return; }
     document.title = 'いつなら？｜' + EVENT.title;
-    document.getElementById('main').classList.remove('hidden');
-    document.getElementById('title').textContent = EVENT.title;
-    document.getElementById('listBox').classList.remove('hidden');
+    $('main').classList.remove('hidden');
+    $('title').textContent = EVENT.title;
     renderMeta();
     renderNote();
 
@@ -542,24 +605,217 @@
       var d = EVENT.decided || {};
       var slot = EVENT.slots.filter(function (s) { return s.key === d.slotKey; })[0] || { label: d.label || '' };
       var p = parts(slot);
-      document.getElementById('decidedBox').classList.remove('hidden');
-      document.getElementById('decidedWhen').innerHTML = p ? esc(p.date) + '<small>' + esc(p.time) + '</small>' : esc(d.label || slot.label || '');
-      if (d.url) { var a = document.getElementById('decidedLink'); a.href = d.url; a.classList.remove('hidden'); }
+      $('decidedBox').classList.remove('hidden');
+      if (typeof drawDecided === 'function') drawDecided(slot, p, d);
+      else $('decidedWhen').innerHTML = p ? esc(p.date) + '<small>' + esc(p.time) + '</small>' : esc(d.label || slot.label || '');
+      if (d.url) { var a = $('decidedLink'); a.href = d.url; a.classList.remove('hidden'); }
       var cal = slot.start && slot.end && typeof gcalUrl === 'function' ? gcalUrl(EVENT.title, slot.start, slot.end, location.href + (d.url ? '\n' + d.url : ''), d.url || '') : '';
-      if (cal) { var ca = document.getElementById('decidedCal'); ca.href = cal; ca.classList.remove('hidden'); }
+      if (cal) { var ca = $('decidedCal'); ca.href = cal; ca.classList.remove('hidden'); }
     } else {
-      document.getElementById('voteArea').classList.remove('hidden');
+      $('voteArea').classList.remove('hidden');
       renderWho();
-      document.getElementById('saveBtn').onclick = save;
+      $('saveBtn').onclick = save;
     }
 
-    document.getElementById('copyBtn').onclick = copyResult;
+    $('copyBtn').onclick = copyResult;
     renderList(votes);
     renderComplete(summary);
   }
 
-  if ('serviceWorker' in navigator) { navigator.serviceWorker.register('./sw.js').catch(function () {}); }
-  boot();
+</script>
+<script>
+  // ---- 案A 月めくり: 描画だけ ----
+  var view = 'mine', cur = null, selDay = null;
+
+  function isDecided() { return EVENT.status === 'decided'; }
+  function decidedKey() {
+    var s = slotByKey((EVENT.decided || {}).slotKey), i = s && dayOf(s);
+    return i ? i.key : null;
+  }
+  function bestOk(day, rows) {
+    var b = 0;
+    day.slots.forEach(function (s) {
+      rows.forEach(function (r) {
+        if (r.key !== s.key) return;
+        var c = r.cells.filter(function (x) { return x.mark === '○'; }).length;
+        if (c > b) b = c;
+      });
+    });
+    return b;
+  }
+  function dayDone(day) {
+    var n = day.slots.filter(function (s) { return myMarks[s.key]; }).length;
+    return n === 0 ? '' : (n === day.slots.length ? 'done' : 'part');
+  }
+
+  function drawGrid() {
+    var days = groupDays().filter(function (d) { return d.info; });
+    if (!days.length) { $('calBox').classList.add('hidden'); return; }
+    var by = {};
+    days.forEach(function (d) { by[d.key] = d; });
+    var months = [];
+    days.forEach(function (d) {
+      var k = d.info.y * 12 + d.info.m;
+      if (months.indexOf(k) === -1) months.push(k);
+    });
+    var dk = isDecided() ? decidedKey() : null;
+    if (!selDay || !by[selDay]) {
+      var pick = dk && by[dk] ? by[dk] : days[0];
+      selDay = pick.key;
+    }
+    if (!cur) { cur = { y: by[selDay].info.y, m: by[selDay].info.m }; }
+    var ck = cur.y * 12 + cur.m;
+    var mi = months.indexOf(ck);
+    $('mnav').classList.toggle('hidden', months.length < 2);
+    $('mprev').disabled = mi <= 0;
+    $('mnext').disabled = mi < 0 || mi >= months.length - 1;
+    $('mnum').textContent = cur.m;
+    $('myear').textContent = cur.y + '年';
+
+    var rows = matrix(), N = allNames().length, t = new Date();
+    var lead = (new Date(cur.y, cur.m - 1, 1).getDay() + 6) % 7;
+    var dim = new Date(cur.y, cur.m, 0).getDate();
+    var h = '';
+    for (var i = 0; i < lead; i++) h += '<span class="cell"></span>';
+    for (var d = 1; d <= dim; d++) {
+      var key = cur.m + '/' + d, day = by[key];
+      var cls = 'cell';
+      if (t.getFullYear() === cur.y && t.getMonth() + 1 === cur.m && t.getDate() === d) cls += ' today';
+      if (!day) { h += '<span class="' + cls + '">' + d + '</span>'; continue; }
+      cls += ' cand';
+      var inner = d, tag = 'button type="button" data-k="' + key + '"';
+      if (isDecided()) {
+        tag = 'span';
+        if (key === dk) cls += ' dec';
+      } else {
+        if (key === selDay) cls += ' sel';
+        if (view === 'all') {
+          var best = bestOk(day, rows);
+          cls += ' ' + (N > 0 && best === N ? 'hall' : best === 0 ? 'h0' : (best / N < .34 ? 'h1' : best / N < .67 ? 'h2' : 'h3'));
+        } else if (myName) {
+          var st = dayDone(day);
+          if (st) inner += '<i class="mk ' + st + '"></i>';
+        }
+      }
+      var label = day.info.m + '月' + day.info.d + '日(' + day.info.wd + ')';
+      h += '<' + tag + ' class="' + cls + '" aria-label="' + label + '">' + inner + '</' + (isDecided() ? 'span' : 'button') + '>';
+    }
+    var grid = $('grid');
+    var had = grid.contains(document.activeElement);
+    grid.innerHTML = h;
+    grid.className = 'grid' + (view === 'all' && !isDecided() ? ' heat' : '') + (isDecided() ? ' fixed' : '');
+    if (had) { var f = grid.querySelector('.sel'); if (f) f.focus(); }
+  }
+
+  function slotRow(slot) {
+    var p = parts(slot);
+    var row = document.createElement('div');
+    row.className = 'slotrow';
+    row.setAttribute('data-slot', slot.key);
+    var lab = document.createElement('div');
+    lab.className = 'tm';
+    lab.textContent = p ? p.time : slot.label;
+    var seg = document.createElement('div');
+    seg.className = 'seg';
+    [['○', 'ok'], ['△', 'tri'], ['×', 'no']].forEach(function (pair) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = pair[1] + (myMarks[slot.key] === pair[0] ? ' on' : '');
+      b.textContent = pair[0];
+      b.setAttribute('aria-label', slotLabel(slot) + ' ' + pair[0]);
+      b.onclick = function () { setMark(slot.key, pair[0]); };
+      seg.appendChild(b);
+    });
+    row.appendChild(lab);
+    row.appendChild(seg);
+    return row;
+  }
+
+  function drawPanel() {
+    var days = groupDays(), by = {};
+    days.forEach(function (d) { by[d.key] = d; });
+    var day = by[selDay];
+    var title = day && day.info ? day.info.m + '月' + day.info.d + '日(' + day.info.wd + ')' : '';
+    $('dayTitle').textContent = title;
+    $('allTitle').textContent = title;
+    var box = $('dayRows');
+    box.innerHTML = '';
+    if (day) day.slots.forEach(function (s) { box.appendChild(slotRow(s)); });
+    days.filter(function (d) { return !d.info; }).forEach(function (d) {
+      d.slots.forEach(function (s) { box.appendChild(slotRow(s)); });
+    });
+    // みんなの回答: その日の星取表
+    var rows = matrix(), names = allNames();
+    var html = '<table class="tbl"><thead><tr><th class="l">時刻</th>';
+    names.forEach(function (n) { html += '<th' + (n === myName ? ' class="me"' : '') + '>' + esc(n) + '</th>'; });
+    html += '</tr></thead><tbody>';
+    rows.forEach(function (r) {
+      var slot = slotByKey(r.key), di = dayOf(slot);
+      if (day && day.info && (!di || di.key !== selDay)) return;
+      html += '<tr' + (r.allOk ? ' class="all"' : '') + '><td class="l">' + esc(timeOf(slot)) + '</td>';
+      r.cells.forEach(function (c) { html += '<td class="' + mkClass(c.mark) + '">' + (c.mark || '-') + '</td>'; });
+      html += '</tr>';
+    });
+    html += '</tbody></table>';
+    $('matrix').innerHTML = html;
+  }
+
+  function syncView() {
+    var dec = isDecided();
+    $('tabs').classList.toggle('hidden', dec);
+    $('mineWrap').classList.toggle('hidden', dec || view !== 'mine');
+    $('allWrap').classList.toggle('hidden', dec || view !== 'all');
+    $('markArea').classList.toggle('hidden', !myName);
+    $('nameHint').classList.toggle('hidden', !!myName);
+    Array.prototype.forEach.call(document.querySelectorAll('#tabs button'), function (b) {
+      b.classList.toggle('on', b.getAttribute('data-v') === view);
+      b.setAttribute('aria-selected', b.getAttribute('data-v') === view ? 'true' : 'false');
+    });
+  }
+
+  function drawList() { syncView(); drawGrid(); drawPanel(); }
+  function onWho() { /* 名前が変わったら renderList が全体を描き直す */ }
+  function onMark(key) {
+    Array.prototype.forEach.call(document.querySelectorAll('[data-slot="' + key + '"] .seg button'), function (b, i) {
+      b.classList.toggle('on', myMarks[key] === ['○', '△', '×'][i]);
+    });
+    drawGrid();
+  }
+
+  function drawDecided(slot, p) {
+    var di = dayOf(slot);
+    $('decidedWhen').innerHTML = di ? di.m + '/' + di.d + '<small>' + WDL[new Date(di.y, di.m - 1, di.d).getDay()] + ' ' + esc(p.time) + '</small>' : esc(slot.label || '');
+  }
+
+  (function () {
+    $('tabs').addEventListener('click', function (e) {
+      var b = e.target.closest('button[data-v]');
+      if (!b) return;
+      view = b.getAttribute('data-v');
+      drawList();
+    });
+    $('grid').addEventListener('click', function (e) {
+      var b = e.target.closest('button[data-k]');
+      if (!b) return;
+      selDay = b.getAttribute('data-k');
+      drawGrid();
+      drawPanel();
+    });
+    function step(dir) {
+      var days = groupDays().filter(function (d) { return d.info; }), ms = [];
+      days.forEach(function (d) { var k = d.info.y * 12 + d.info.m; if (ms.indexOf(k) === -1) ms.push(k); });
+      var i = ms.indexOf(cur.y * 12 + cur.m) + dir;
+      if (i < 0 || i >= ms.length) return;
+      cur = { y: Math.floor((ms[i] - 1) / 12), m: ((ms[i] - 1) % 12) + 1 };
+      drawGrid();
+    }
+    $('mprev').onclick = function () { step(-1); };
+    $('mnext').onclick = function () { step(1); };
+  })();
+</script>
+<script>
+if ('serviceWorker' in navigator) { navigator.serviceWorker.register('./sw.js').catch(function () {}); }
+boot();
 </script>
 </body>
 </html>
