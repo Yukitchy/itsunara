@@ -145,6 +145,11 @@
       <h2>みんなの回答 <span class="sub" id="pending" style="font-weight:500;margin-left:6px"></span></h2>
       <div class="table-wrap" id="matrix"></div>
     </div>
+
+    <div id="noteBox" class="card hidden">
+      <h2 id="noteTitle"></h2>
+      <ul id="noteBody" style="margin:0;padding-left:1.2em;line-height:1.7"></ul>
+    </div>
   </div>
 </div>
 <div class="toast" id="toast"></div>
@@ -200,6 +205,22 @@
     if (m.duration) bits.push(m.duration + '分');
     bits.push(EVENT.slots.length + '候補');
     document.getElementById('meta').textContent = bits.join(' ・ ');
+  }
+
+  function renderNote() {
+    var note = (EVENT.meta && EVENT.meta.note) || '';
+    var lines = note.split('\n').map(function (l) { return l.trim(); }).filter(Boolean);
+    if (!lines.length) return;
+    var title = lines[0].charAt(0) === '#' ? lines.shift().replace(/^#\s*/, '') : '補足';
+    document.getElementById('noteTitle').textContent = title;
+    document.getElementById('noteBody').innerHTML = lines.map(function (l) {
+      var c = l.split('｜');
+      var url = c.length > 1 && /^https?:\/\//.test(c[c.length - 1]) ? c.pop() : '';
+      var name = c.shift();
+      var head = url ? '<a href="' + esc(url) + '" target="_blank" rel="noopener">' + esc(name) + '</a>' : esc(name);
+      return '<li>' + head + (c.length ? '<small style="color:#666"> ' + esc(c.join(' ・ ')) + '</small>' : '') + '</li>';
+    }).join('');
+    document.getElementById('noteBox').classList.remove('hidden');
   }
 
   function renderWho() {
@@ -496,6 +517,7 @@
     document.getElementById('title').textContent = EVENT.title;
     document.getElementById('listBox').classList.remove('hidden');
     renderMeta();
+    renderNote();
 
     if (EVENT.status === 'decided') {
       var d = EVENT.decided || {};
