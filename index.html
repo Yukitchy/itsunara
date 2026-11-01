@@ -24,7 +24,9 @@
   * { box-sizing:border-box; }
   html, body { overflow-x:hidden; }
   body { margin:0; background:var(--cloud); color:var(--navy); font-family:"Manrope","Zen Kaku Gothic New",system-ui,-apple-system,sans-serif; font-weight:500; line-height:1.5; -webkit-text-size-adjust:100%; }
-  .wrap { max-width:480px; margin:0 auto; padding:16px 16px 64px; }
+  html { scroll-behavior:smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior:auto; } }
+  .wrap { max-width:480px; margin:0 auto; padding:16px 16px 140px; }
   @media (min-width:768px) { .wrap { max-width:640px; padding-top:32px; } }
   .hidden { display:none !important; }
   .brand { display:block; height:36px; width:auto; margin:6px 0 16px; }
@@ -40,12 +42,54 @@
   .names button { min-height:48px; padding:0 16px; border:1px solid var(--blue); border-radius:8px; background:#fff; color:var(--blue); font:inherit; font-weight:600; font-size:15px; cursor:pointer; }
   .names button.sel { background:var(--navy); border-color:var(--navy); color:#fff; }
 
-  .slot { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 0; border-top:1px solid var(--hair); }
-  .slot:first-child { border-top:none; padding-top:0; }
-  .slot .lab { font-weight:700; font-size:15px; line-height:1.3; }
-  .slot .lab small { display:block; font-weight:500; font-size:13px; color:var(--slate); }
+  /* みんなの重なり：バナー */
+  .banner { display:flex; align-items:center; gap:14px; background:var(--navy); color:#fff; border-radius:16px; padding:16px; margin-bottom:16px; box-shadow:var(--shadow); }
+  .bn { flex:none; width:64px; height:64px; border-radius:12px; background:var(--blue); display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .bn b { font-size:26px; font-weight:800; line-height:1; }
+  .bn span { font-size:11px; font-weight:700; line-height:1; margin-top:4px; }
+  .bt { min-width:0; }
+  .bt .l { font-size:12px; font-weight:700; color:#c9d8ea; }
+  .bt .v { font-size:16px; font-weight:800; line-height:1.35; overflow-wrap:anywhere; }
+  .bt .s { font-size:12px; color:#c9d8ea; margin-top:2px; overflow-wrap:anywhere; }
+  .bt .s:empty { display:none; }
+
+  /* みんなの重なり：カレンダー */
+  .cal-head { display:flex; align-items:baseline; justify-content:space-between; gap:8px; margin-bottom:8px; }
+  .cal-head h2 { margin:0; }
+  .cal-hint { flex:none; font-size:12px; color:var(--slate); }
+  .cal-wd, .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); }
+  .cal-wd span { text-align:center; font-size:11px; font-weight:700; color:var(--slate); padding:4px 0; }
+  .cd { height:56px; display:flex; flex-direction:column; align-items:center; padding-top:2px; text-decoration:none; color:var(--navy); }
+  .cn { font-style:normal; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:700; color:#9fb2c6; }
+  .cn.long { font-size:11px; }
+  .cc { font-size:10px; font-weight:800; line-height:12px; margin-top:2px; }
+  .s-all .cn { background:var(--blue); color:#fff; } .s-all .cc { color:var(--blue); }
+  .s-wait .cn { background:#fff; box-shadow:inset 0 0 0 1.5px var(--blue); color:var(--blue); } .s-wait .cc { color:var(--blue); }
+  .s-tri .cn { background:var(--sky); box-shadow:inset 0 0 0 1.5px var(--cobalt); color:var(--cobalt); } .s-tri .cc { color:var(--cobalt); }
+  .s-none .cn { background:var(--pebble); box-shadow:inset 0 0 0 1px var(--mist); color:var(--slate); } .s-none .cc { color:var(--slate); }
+  .cd.today .cn { box-shadow:inset 0 0 0 1.5px var(--navy); }
+  .legend { display:flex; flex-wrap:wrap; gap:6px 14px; margin-top:10px; font-size:11px; color:var(--slate); }
+  .legend span { display:inline-flex; align-items:center; gap:5px; }
+  .legend i { display:inline-block; width:10px; height:10px; border-radius:50%; }
+  .l-all { background:var(--blue); }
+  .l-tri { background:var(--sky); box-shadow:inset 0 0 0 1.5px var(--cobalt); }
+  .l-wait { background:#fff; box-shadow:inset 0 0 0 1.5px var(--blue); }
+  .l-none { background:var(--pebble); box-shadow:inset 0 0 0 1px var(--mist); }
+
+  /* 候補リスト */
+  .grp { scroll-margin-top:12px; margin:14px 0 6px; font-size:14px; font-weight:800; color:var(--slate); }
+  .grp:first-child { margin-top:0; }
+  .srow { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:10px; border-radius:10px; margin-bottom:4px; background:var(--cloud); }
+  .srow.all { background:var(--sky); }
+  .sl { min-width:0; flex:1; }
+  .st { font-size:16px; font-weight:800; line-height:1.3; }
+  .pills { display:flex; flex-wrap:wrap; gap:4px; margin-top:4px; }
+  .pill { display:inline-flex; align-items:center; gap:4px; height:22px; padding:0 8px 0 2px; border-radius:999px; background:#fff; box-shadow:inset 0 0 0 1px var(--hair); font-size:12px; font-weight:700; }
+  .pc { font-style:normal; width:18px; height:18px; border-radius:50%; background:var(--navy); color:#fff; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; }
+  .pc.me { background:var(--blue); }
+  .pm.o { color:var(--blue); } .pm.t { color:var(--cobalt); } .pm.x, .pm.n { color:var(--slate); }
   .seg { display:flex; gap:6px; flex:none; }
-  .seg button { width:48px; height:44px; border:1px solid var(--hair); border-radius:8px; background:#fff; color:var(--mist); font:inherit; font-weight:700; font-size:18px; cursor:pointer; padding:0; }
+  .seg button { width:46px; height:44px; border:1px solid var(--hair); border-radius:8px; background:#fff; color:var(--mist); font:inherit; font-weight:700; font-size:18px; cursor:pointer; padding:0; }
   .seg button.ok.on { background:var(--blue); border-color:var(--blue); color:#fff; }
   .seg button.tri.on { background:var(--sky); border-color:var(--blue); color:var(--cobalt); }
   .seg button.no.on { background:var(--pebble); border-color:var(--pebble); color:var(--slate); }
@@ -92,7 +136,17 @@
   .sk-row { height:40px; }
   @keyframes skp { 0%,100% { opacity:1; } 50% { opacity:.45; } }
   @media (prefers-reduced-motion: reduce) { .sk { animation:none; } }
-  .toast { position:fixed; left:50%; bottom:24px; transform:translateX(-50%); background:var(--navy); color:#fff; padding:10px 18px; border-radius:8px; font-size:14px; opacity:0; transition:opacity .2s; pointer-events:none; }
+  .bar { position:fixed; left:0; right:0; bottom:0; z-index:10; background:#fff; border-top:1px solid var(--hair); padding:12px 16px calc(16px + env(safe-area-inset-bottom)); }
+  .bar-prog { position:absolute; top:0; left:0; right:0; height:3px; background:var(--pebble); }
+  .bar-prog i { display:block; height:100%; width:0; background:var(--blue); transition:width .2s; }
+  .bar-in { max-width:480px; margin:0 auto; display:flex; align-items:center; gap:16px; }
+  @media (min-width:768px) { .bar-in { max-width:640px; } }
+  .bar-cnt { flex:none; line-height:1.2; }
+  .bar-n { font-size:20px; font-weight:800; }
+  .bar-n span { font-size:13px; font-weight:500; color:var(--slate); }
+  .bar-l { font-size:12px; color:var(--slate); }
+  .bar .btn { flex:1; width:auto; }
+  .toast { z-index:20; position:fixed; left:50%; bottom:110px; transform:translateX(-50%); background:var(--navy); color:#fff; padding:10px 18px; border-radius:8px; font-size:14px; opacity:0; transition:opacity .2s; pointer-events:none; }
   .toast.show { opacity:1; }
 </style>
 </head>
@@ -134,15 +188,25 @@
         <input id="whoText" type="text" placeholder="名前を入力" autocomplete="name">
         <div class="names" id="who"></div>
       </div>
-      <div id="markArea" class="hidden">
-        <div class="card">
-          <h2>各候補に ○ △ × をつける</h2>
-          <div id="slots"></div>
-        </div>
-        <div class="card">
-          <textarea id="comment" placeholder="ひとこと（任意）"></textarea>
-          <button class="btn" id="saveBtn" disabled style="margin-top:12px">送信する</button>
-          <p class="help" id="saveHelp">すべての候補に印をつけると送信できます</p>
+      <div class="banner" id="banner"></div>
+      <div class="card hidden" id="calCard">
+        <div class="cal-head"><h2 id="calTitle"></h2><span class="cal-hint">日付で一覧へ</span></div>
+        <div class="cal-wd"><span>日</span><span>月</span><span>火</span><span>水</span><span>木</span><span>金</span><span>土</span></div>
+        <div class="cal-grid" id="calGrid"></div>
+        <div class="legend"><span><i class="l-all"></i>全員○あり</span><span><i class="l-tri"></i>△まで</span><span><i class="l-wait"></i>回答待ち</span><span><i class="l-none"></i>重ならない</span></div>
+      </div>
+      <div class="card">
+        <h2>○ △ × をつける</h2>
+        <div id="slots"></div>
+      </div>
+      <div class="card">
+        <textarea id="comment" placeholder="ひとこと（任意）"></textarea>
+      </div>
+      <div class="bar">
+        <div class="bar-prog"><i id="barFill"></i></div>
+        <div class="bar-in">
+          <div class="bar-cnt"><div class="bar-n"><b id="cnt">0</b><span id="cntTot"> / 0</span></div><div class="bar-l">回答済み</div></div>
+          <button class="btn" id="saveBtn" disabled>送信する</button>
         </div>
       </div>
     </div>
@@ -267,42 +331,130 @@
     if (btn) btn.classList.add('sel');
     var box = document.getElementById('whoText');
     if (box && box.value !== name) box.value = name;
-    document.getElementById('markArea').classList.toggle('hidden', !name);
     prefill();
-    renderSlots();
-    renderList(VOTES);
+    renderList(VOTES);   // 中で renderBoard() も呼ぶ
     checkSave();
   }
 
-  function renderSlots() {
-    var box = document.getElementById('slots');
-    box.innerHTML = '';
-    EVENT.slots.forEach(function (slot) {
-      var p = parts(slot);
-      var row = document.createElement('div');
-      row.className = 'slot';
-      var lab = document.createElement('div');
-      lab.className = 'lab';
-      lab.innerHTML = p ? esc(p.date) + '<small>' + esc(p.time) + '</small>' : esc(slot.label);
-      var seg = document.createElement('div');
-      seg.className = 'seg';
-      [['○', 'ok'], ['△', 'tri'], ['×', 'no']].forEach(function (pair) {
-        var b = document.createElement('button');
-        b.type = 'button';
-        b.className = pair[1] + (myMarks[slot.key] === pair[0] ? ' on' : '');
-        b.textContent = pair[0];
-        b.setAttribute('aria-label', slotLabel(slot) + ' ' + pair[0]);
-        b.onclick = function () {
-          myMarks[slot.key] = pair[0];
-          Array.prototype.forEach.call(seg.children, function (x) { x.classList.toggle('on', x === b); });
-          checkSave();
-        };
-        seg.appendChild(b);
+  // 日付キー(YYYY-MM-DD)。start が読めない枠は null
+  function slotDate(slot) {
+    if (!slot || !slot.start) return null;
+    var d = new Date(slot.start);
+    return isNaN(d.getTime()) ? null : d;
+  }
+  function dkey(d) { return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()); }
+
+  // 表示する人: 回答者 → 参加者 → 自分（renderList と同じ並び）
+  function boardNames() {
+    var names = [];
+    VOTES.forEach(function (v) { if (v.name && names.indexOf(v.name) === -1) names.push(v.name); });
+    EVENT.participants.forEach(function (n) { if (names.indexOf(n) === -1) names.push(n); });
+    if (myName && names.indexOf(myName) === -1) names.push(myName);
+    return names;
+  }
+
+  // 自分は未送信の myMarks が最優先、無ければ保存済みの票
+  function markOf(name, key) {
+    if (name === myName && myMarks[key]) return myMarks[key];
+    for (var i = 0; i < VOTES.length; i++) {
+      if (VOTES[i].name === name && VOTES[i].slotKey === key) return VOTES[i].mark;
+    }
+    return null;
+  }
+
+  // バナー + カレンダー + 候補リストをまとめて描き直す
+  function renderBoard() {
+    if (!EVENT || EVENT.status === 'decided') return;
+    var names = boardNames();
+    var info = EVENT.slots.map(function (slot, idx) {
+      var all = names.length > 0, tri = names.length > 0, wait = false;
+      var marks = names.map(function (n) {
+        var m = markOf(n, slot.key);
+        if (m !== '○') all = false;
+        if (m !== '○' && m !== '△') tri = false;
+        if (!m) wait = true;
+        return m;
       });
-      row.appendChild(lab);
-      row.appendChild(seg);
-      box.appendChild(row);
+      return { slot: slot, idx: idx, marks: marks, all: all, tri: tri, wait: wait, d: slotDate(slot) };
     });
+
+    // --- バナー ---
+    var alls = info.filter(function (x) { return x.all; });
+    var late = names.filter(function (n, i) { return info.some(function (x) { return !x.marks[i]; }); });
+    var sub = late.length ? '未回答: ' + late.join('、') : (alls.length > 1 ? 'ほか' + (alls.length - 1) + '枠' : '');
+    document.getElementById('banner').innerHTML =
+      '<div class="bn"><b>' + alls.length + '</b><span>枠</span></div>' +
+      '<div class="bt"><div class="l">全員○の枠</div><div class="v">' + (alls.length ? esc(slotLabel(alls[0].slot)) : 'まだありません') + '</div><div class="s">' + esc(sub) + '</div></div>';
+
+    // --- カレンダー ---
+    var days = {}, lo = null, hi = null;
+    info.forEach(function (x) {
+      if (!x.d) return;
+      var k = dkey(x.d), o = days[k] || (days[k] = { all: false, wait: false, tri: false });
+      if (x.all) o.all = true;
+      if (x.wait) o.wait = true;
+      if (x.tri) o.tri = true;
+      var day = new Date(x.d.getFullYear(), x.d.getMonth(), x.d.getDate());
+      if (!lo || day < lo) lo = day;
+      if (!hi || day > hi) hi = day;
+    });
+    var calCard = document.getElementById('calCard');
+    calCard.classList.toggle('hidden', !lo);
+    if (lo) {
+      var from = new Date(lo.getFullYear(), lo.getMonth(), lo.getDate() - lo.getDay());
+      var to = new Date(hi.getFullYear(), hi.getMonth(), hi.getDate() + (6 - hi.getDay()));
+      var multi = lo.getMonth() !== hi.getMonth() || lo.getFullYear() !== hi.getFullYear();
+      document.getElementById('calTitle').textContent = multi ? (lo.getMonth() + 1) + '月〜' + (hi.getMonth() + 1) + '月 · みんなの重なり' : (lo.getMonth() + 1) + '月 · みんなの重なり';
+      var today = dkey(new Date()), html = '', first = true;
+      for (var c = new Date(from.getTime()); c <= to; c.setDate(c.getDate() + 1)) {
+        var k = dkey(c), o = days[k], isToday = k === today;
+        var newMonth = multi && !first && c.getDate() === 1;
+        var num = newMonth ? (c.getMonth() + 1) + '/1' : c.getDate();
+        first = false;
+        var numHtml = '<i class="cn' + (newMonth ? ' long' : '') + '">' + num + '</i>';
+        if (o) {
+          var st = o.all ? ['all', '全員○'] : o.wait ? ['wait', 'まだ'] : o.tri ? ['tri', '△'] : ['none', 'なし'];
+          html += '<a class="cd s-' + st[0] + (isToday ? ' today' : '') + '" href="#d-' + k + '" aria-label="' + (c.getMonth() + 1) + '月' + c.getDate() + '日(' + WD[c.getDay()] + ') ' + st[1] + '">' + numHtml + '<b class="cc">' + st[1] + '</b></a>';
+        } else {
+          html += '<span class="cd' + (isToday ? ' today' : '') + '">' + numHtml + '<b class="cc"></b></span>';
+        }
+      }
+      document.getElementById('calGrid').innerHTML = html;
+    }
+
+    // --- 候補リスト（日付ごと） ---
+    var groups = [], gmap = {};
+    info.forEach(function (x) {
+      var p = parts(x.slot), gk = x.d ? dkey(x.d) : 'x:' + (p ? p.date : x.slot.label);
+      var g = gmap[gk];
+      if (!g) { g = gmap[gk] = { id: x.d ? 'd-' + gk : '', head: p ? p.date : x.slot.label, rows: [] }; groups.push(g); }
+      var pills = names.map(function (n, i) {
+        var m = x.marks[i], cls = m === '○' ? 'o' : m === '△' ? 't' : m === '×' ? 'x' : 'n';
+        return '<span class="pill" aria-label="' + esc(n) + ' ' + (m || '未回答') + '"><i class="pc' + (n === myName ? ' me' : '') + '">' + esc(n.charAt(0)) + '</i><span class="pm ' + cls + '">' + (m || '…') + '</span></span>';
+      }).join('');
+      var seg = [['○', 'ok'], ['△', 'tri'], ['×', 'no']].map(function (pair) {
+        var on = myMarks[x.slot.key] === pair[0];
+        return '<button type="button" class="' + pair[1] + (on ? ' on' : '') + '" data-i="' + x.idx + '" data-m="' + pair[0] + '" aria-pressed="' + on + '" aria-label="' + esc(slotLabel(x.slot)) + ' ' + pair[0] + '">' + pair[0] + '</button>';
+      }).join('');
+      g.rows.push('<div class="srow' + (x.all ? ' all' : '') + '"><div class="sl"><div class="st">' + esc(p ? p.time : x.slot.label) + '</div><div class="pills">' + pills + '</div></div><div class="seg">' + seg + '</div></div>');
+    });
+    var box = document.getElementById('slots');
+    box.innerHTML = groups.map(function (g) {
+      return '<div class="grp"' + (g.id ? ' id="' + g.id + '"' : '') + '>' + esc(g.head) + '</div>' + g.rows.join('');
+    }).join('');
+    if (!box.dataset.wired) {
+      box.dataset.wired = '1';
+      box.addEventListener('click', function (e) {
+        var b = e.target, m = b && b.getAttribute && b.getAttribute('data-m');
+        if (!m) return;
+        var slot = EVENT.slots[+b.getAttribute('data-i')];
+        if (!slot) return;
+        if (!myName) { toast('先に名前を選んでください'); document.getElementById('whoText').focus(); return; }
+        myMarks[slot.key] = m;
+        renderBoard();
+        checkSave();
+      });
+    }
   }
 
   function prefill() {
@@ -316,8 +468,11 @@
   function checkSave() {
     var all = EVENT.slots.every(function (s) { return myMarks[s.key]; });
     var ok = !!(myName && all);
+    var n = EVENT.slots.filter(function (s) { return myMarks[s.key]; }).length, total = EVENT.slots.length;
     document.getElementById('saveBtn').disabled = !ok;
-    document.getElementById('saveHelp').classList.toggle('hidden', ok);
+    document.getElementById('cnt').textContent = n;
+    document.getElementById('cntTot').textContent = ' / ' + total;
+    document.getElementById('barFill').style.width = (total ? Math.round(n / total * 100) : 0) + '%';
   }
 
   function renderList(votes) {
@@ -344,6 +499,7 @@
     });
     html += '</tbody></table>';
     document.getElementById('matrix').innerHTML = html;
+    renderBoard();
   }
 
   // 全員そろった時のカード。summary は API の返却をそのまま使う（表側で再計算しない）
@@ -534,7 +690,6 @@
     document.title = 'いつなら？｜' + EVENT.title;
     document.getElementById('main').classList.remove('hidden');
     document.getElementById('title').textContent = EVENT.title;
-    document.getElementById('listBox').classList.remove('hidden');
     renderMeta();
     renderNote();
 
@@ -542,6 +697,7 @@
       var d = EVENT.decided || {};
       var slot = EVENT.slots.filter(function (s) { return s.key === d.slotKey; })[0] || { label: d.label || '' };
       var p = parts(slot);
+      document.getElementById('listBox').classList.remove('hidden');
       document.getElementById('decidedBox').classList.remove('hidden');
       document.getElementById('decidedWhen').innerHTML = p ? esc(p.date) + '<small>' + esc(p.time) + '</small>' : esc(d.label || slot.label || '');
       if (d.url) { var a = document.getElementById('decidedLink'); a.href = d.url; a.classList.remove('hidden'); }
@@ -556,6 +712,7 @@
     document.getElementById('copyBtn').onclick = copyResult;
     renderList(votes);
     renderComplete(summary);
+    if (EVENT.status !== 'decided') checkSave();
   }
 
   if ('serviceWorker' in navigator) { navigator.serviceWorker.register('./sw.js').catch(function () {}); }
