@@ -313,7 +313,10 @@
       var b = document.createElement('button');
       b.type = 'button';
       b.textContent = name;
-      b.onclick = function () { selectMe(name, b); };
+      b.onclick = function () {
+        try { localStorage.setItem('itsunara:me', name); } catch (e) { /* 無効化は無視 */ }
+        selectMe(name, b);
+      };
       box.appendChild(b);
     });
     var text = document.getElementById('whoText');
@@ -321,6 +324,15 @@
       text.dataset.wired = '1';
       text.addEventListener('input', function () { selectMe(text.value, null); });
     }
+  }
+
+  // この端末で前に選んだ名前。管理キーがある端末＝ユウキ本人なので、初回でも「ユウキ」を選ぶ
+  function autoSelectMe() {
+    if (myName) return;
+    var me = '';
+    try { me = localStorage.getItem('itsunara:me') || (localStorage.getItem('itsunara_key') ? 'ユウキ' : ''); } catch (e) { return; }
+    var hit = Array.prototype.filter.call(document.querySelectorAll('#who button'), function (x) { return x.textContent === me; })[0];
+    if (hit) selectMe(me, hit);
   }
 
   function selectMe(name, btn) {
@@ -711,6 +723,7 @@
 
     document.getElementById('copyBtn').onclick = copyResult;
     renderList(votes);
+    if (EVENT.status !== 'decided') autoSelectMe();
     renderComplete(summary);
     if (EVENT.status !== 'decided') checkSave();
   }
