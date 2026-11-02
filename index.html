@@ -229,6 +229,8 @@
   var EVENT = null;
   var myName = null;
   var myMarks = {};
+  var dirty = {};          // この画面で自分が押した枠。最新の回答が届いても上書きしない
+  var syncNote = '';       // 速報（古いかもしれない内容）を出している間の注記
   var VOTES = [];
   var SUMMARY = null;
   var WD = ['日','月','火','水','木','金','土'];
@@ -337,7 +339,7 @@
 
   function selectMe(name, btn) {
     name = (name || '').trim();
-    if (name !== myName) myMarks = {};
+    if (name !== myName) { myMarks = {}; dirty = {}; }
     myName = name;
     Array.prototype.forEach.call(document.querySelectorAll('#who button'), function (x) { x.classList.remove('sel'); });
     if (btn) btn.classList.add('sel');
@@ -463,6 +465,7 @@
         if (!slot) return;
         if (!myName) { toast('先に名前を選んでください'); document.getElementById('whoText').focus(); return; }
         myMarks[slot.key] = m;
+        dirty[slot.key] = true;
         renderBoard();
         checkSave();
       });
@@ -471,9 +474,10 @@
 
   function prefill() {
     VOTES.forEach(function (v) {
-      if (v.name !== myName) return;
+      if (v.name !== myName || dirty[v.slotKey]) return;
       myMarks[v.slotKey] = v.mark;
-      if (v.comment) document.getElementById('comment').value = v.comment;
+      var c = document.getElementById('comment');
+      if (v.comment && !c.value) c.value = v.comment;
     });
   }
 
@@ -493,7 +497,7 @@
     VOTES.forEach(function (v) { if (v.name && names.indexOf(v.name) === -1) names.push(v.name); });
     EVENT.participants.forEach(function (n) { if (names.indexOf(n) === -1) names.push(n); });
     var pending = EVENT.participants.filter(function (n) { return !VOTES.some(function (v) { return v.name === n; }); });
-    document.getElementById('pending').textContent = pending.length ? '未回答: ' + pending.join('、') : '全員回答済み';
+    document.getElementById('pending').textContent = (pending.length ? '未回答: ' + pending.join('、') : '全員回答済み') + syncNote;
 
     var rows = computeMatrix(VOTES, names, EVENT.slots);
     var html = '<table><thead><tr><th class="l">候補</th>';
@@ -638,7 +642,11 @@
   }
 
   function failed(hadContent) {
-    if (hadContent) return;               // 古い内容が出ているなら黙って諦める
+    if (hadContent) {                     // 古い内容が出ているなら、古いと分かるように残す
+      syncNote = '（最新を取得できませんでした。再読み込みしてください）';
+      renderList(VOTES);
+      return;
+    }
     hideSkeleton();
     var b = document.getElementById('closedBox');
     b.innerHTML = '';
@@ -670,7 +678,11 @@
       hideSkeleton();
       EVENT = res.event;
       // 名前を入れて記入中なら画面を作り直さず、表だけ静かに更新する
-      if (shown && myName) { renderList(res.votes || []); renderComplete(res.summary); }
+      syncNote = isLive ? '' : '（最新を確認中…）';
+      if (shown && myName) {
+        renderList(res.votes || []); renderComplete(res.summary);
+        prefill(); renderBoard(); checkSave();   // 先に名前を選んでいても、届いた自分の回答を○△×に反映する
+      }
       else { start(res.votes || [], res.summary); }
       shown = true;
       if (isLive) { live = true; writeCache(id, res); }
