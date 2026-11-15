@@ -321,6 +321,15 @@
     if (!slot || !slot.start || !slot.end || typeof gcalUrl !== 'function') return '';
     return gcalUrl(ev.title, slot.start, slot.end, pageUrl(ev.id) + (d.url ? '\n' + d.url : ''), d.url || '');
   }
+  // 媒体別の連絡文（テンプレ。送るのはユウキ）
+  function draftText(ev, med) {
+    var d = ev.decided || {}, cal = decidedCal(ev);
+    var when = d.label || '', meet = d.url ? 'Meet: ' + d.url : '';
+    var tail = (meet ? '\n' + meet : '') + (cal ? '\nカレンダーに入れる: ' + cal : '');
+    if (med === 'mail') return '件名: 【確定】' + ev.title + '（' + when + '）\n\nご都合をお知らせいただきありがとうございました。\n下記の日時で確定いたしました。\n\n日時: ' + when + (meet ? '\n' + meet : '') + (cal ? '\nカレンダー登録: ' + cal : '') + '\n\n当日はどうぞよろしくお願いいたします。';
+    if (med === 'dm') return '日程ありがとうございます！\n' + when + ' で確定です。' + tail + '\n当日よろしくお願いします。';
+    return '日程ありがとう！\n' + when + ' で決まりました。' + tail + '\nよろしくね。';
+  }
   function esc(s) {
     return String(s).replace(/[&<>"]/g, function (c) {
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
@@ -566,6 +575,11 @@
         html += '<div class="btns"><button class="btn btn-secondary btn-sm" data-copy="dtext' + i + '">コピー</button>' +
           '<button class="btn btn-secondary btn-sm" data-act="card" data-i="' + i + '">決定カード画像</button></div>';
         html += '<div class="cardBox"></div>';
+        html += '<label class="f">相手の媒体</label><select class="dMed"><option value="line">LINE</option><option value="mail">メール</option><option value="dm">DM</option></select>';
+        html += '<label class="f">連絡文の下書き（編集できます）</label><textarea class="dDraft"></textarea>';
+        html += '<label class="f">ゲストのメール（カンマ区切り・招待を送る時だけ）</label><input type="text" class="dMail" placeholder="a@example.com, b@example.com">';
+        html += '<div class="btns"><button class="btn btn-secondary btn-sm" data-act="sendDraft" data-i="' + i + '">この文面をLINEで自分に送る</button>' +
+          '<button class="btn btn-primary btn-sm" data-act="invite" data-i="' + i + '">カレンダー招待を送る</button></div>';
       }
       if (ev.tally && ev.tally.length) {
         var bo = -1, bx = 0;
@@ -601,6 +615,12 @@
       box.appendChild(c);
     });
 
+    Array.prototype.forEach.call(box.querySelectorAll('.dMed'), function (sel) {
+      var card = sel.closest('.card'), ta = card.querySelector('.dDraft');
+      var ev = EVENTS[Array.prototype.indexOf.call(box.children, card)];
+      var fill = function () { ta.value = draftText(ev, sel.value); };
+      sel.onchange = fill; fill();
+    });
     Array.prototype.forEach.call(box.querySelectorAll('button[data-act]'), function (b) {
       b.onclick = function () { onAct(b.getAttribute('data-act'), Number(b.getAttribute('data-i')), b); };
     });
@@ -660,6 +680,17 @@
       $('fixedUrl').value = (ev.meta && ev.meta.fixedUrl) || '';
       $('fixedUrl').classList.toggle('hidden', lt !== 'fixed');
       window.scrollTo(0, 0);
+      return;
+    }
+
+    if (act === 'sendDraft' || act === 'invite') {
+      var emails = card.querySelector('.dMail').value.split(',').map(function (x) { return x.trim(); }).filter(Boolean);
+      if (act === 'invite' && !emails.length) { msg.textContent = 'ゲストのメールを入れてください'; return; }
+      if (act === 'invite' && !confirm(emails.join(', ') + ' にカレンダー招待を送ります。よろしいですか？')) return;
+      btn.disabled = true;
+      post(act === 'invite' ? { action: 'invite', id: ev.id, emails: emails } : { action: 'sendDraft', id: ev.id, text: card.querySelector('.dDraft').value })
+        .then(function (res) { btn.disabled = false; msg.textContent = res && res.ok ? (act === 'invite' ? '招待を送りました' : 'LINEに送りました') : ((res && res.error) || '失敗しました'); })
+        .catch(function (err) { btn.disabled = false; msg.textContent = String(err); });
       return;
     }
 
