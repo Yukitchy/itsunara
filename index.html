@@ -389,7 +389,7 @@
         if (!m) wait = true;
         return m;
       });
-      return { slot: slot, idx: idx, marks: marks, all: all, tri: tri, wait: wait, d: slotDate(slot) };
+      return { slot: slot, idx: idx, marks: marks, all: all, tri: tri, wait: wait, ok: marks.filter(function (m) { return m === '○'; }).length, d: slotDate(slot) };
     });
 
     // --- バナー ---
@@ -404,10 +404,11 @@
     var days = {}, lo = null, hi = null;
     info.forEach(function (x) {
       if (!x.d) return;
-      var k = dkey(x.d), o = days[k] || (days[k] = { all: false, wait: false, tri: false });
+      var k = dkey(x.d), o = days[k] || (days[k] = { all: false, wait: false, tri: false, ok: 0 });
       if (x.all) o.all = true;
       if (x.wait) o.wait = true;
       if (x.tri) o.tri = true;
+      if (x.ok > o.ok) o.ok = x.ok;
       var day = new Date(x.d.getFullYear(), x.d.getMonth(), x.d.getDate());
       if (!lo || day < lo) lo = day;
       if (!hi || day > hi) hi = day;
@@ -427,8 +428,8 @@
         first = false;
         var numHtml = '<i class="cn' + (newMonth ? ' long' : '') + '">' + num + '</i>';
         if (o) {
-          var st = o.all ? ['all', '全員○'] : o.wait ? ['wait', 'まだ'] : o.tri ? ['tri', '△'] : ['none', 'なし'];
-          html += '<a class="cd s-' + st[0] + (isToday ? ' today' : '') + '" href="#d-' + k + '" aria-label="' + (c.getMonth() + 1) + '月' + c.getDate() + '日(' + WD[c.getDay()] + ') ' + st[1] + '">' + numHtml + '<b class="cc">' + st[1] + '</b></a>';
+          var st = o.all ? ['all', '全員○'] : o.wait ? ['wait', '○' + o.ok] : o.tri ? ['tri', '○' + o.ok] : ['none', '○' + o.ok];
+          html += '<a class="cd s-' + st[0] + (isToday ? ' today' : '') + '" href="#d-' + k + '" aria-label="' + (c.getMonth() + 1) + '月' + c.getDate() + '日(' + WD[c.getDay()] + ') ○' + o.ok + '人">' + numHtml + '<b class="cc">' + st[1] + '</b></a>';
         } else {
           html += '<span class="cd' + (isToday ? ' today' : '') + '">' + numHtml + '<b class="cc"></b></span>';
         }
