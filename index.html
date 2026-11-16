@@ -18,7 +18,7 @@
   /* Calendly design system (Refero) : Ink Navy / Signal Blue / Cloud / Pebble / Hairline */
   :root {
     --navy:#0b3558; --blue:#006bff; --slate:#476788; --mist:#a6bbd1;
-    --cloud:#f8f9fb; --paper:#ffffff; --pebble:#f0f3f8; --hair:#d4e0ed; --sky:#e6f0ff; --cobalt:#004eba;
+    --cloud:#f8f9fb; --paper:#ffffff; --pebble:#f0f3f8; --hair:#d4e0ed; --sky:#e6f0ff; --cobalt:#004eba; --pop:#ff7a00;
     --shadow: rgba(71,103,136,0.04) 0 4px 5px, rgba(71,103,136,0.03) 0 8px 15px, rgba(71,103,136,0.08) 0 30px 50px;
   }
   * { box-sizing:border-box; }
@@ -68,6 +68,9 @@
   .s-tri .cn { background:var(--sky); box-shadow:inset 0 0 0 1.5px var(--cobalt); color:var(--cobalt); } .s-tri .cc { color:var(--cobalt); }
   .s-none .cn { background:var(--pebble); box-shadow:inset 0 0 0 1px var(--mist); color:var(--slate); } .s-none .cc { color:var(--slate); }
   .cd.today .cn { box-shadow:inset 0 0 0 1.5px var(--navy); }
+  .cd.best .cn { background:var(--pop); color:#fff; box-shadow:0 2px 8px rgba(255,122,0,0.45); }
+  .cd.best .cc { color:var(--pop); }
+  .l-best { background:var(--pop); }
   .legend { display:flex; flex-wrap:wrap; gap:6px 14px; margin-top:10px; font-size:11px; color:var(--slate); }
   .legend span { display:inline-flex; align-items:center; gap:5px; }
   .legend i { display:inline-block; width:10px; height:10px; border-radius:50%; }
@@ -193,7 +196,7 @@
         <div class="cal-head"><h2 id="calTitle"></h2><span class="cal-hint">日付で一覧へ</span></div>
         <div class="cal-wd"><span>日</span><span>月</span><span>火</span><span>水</span><span>木</span><span>金</span><span>土</span></div>
         <div class="cal-grid" id="calGrid"></div>
-        <div class="legend"><span><i class="l-all"></i>全員○あり</span><span><i class="l-tri"></i>△まで</span><span><i class="l-wait"></i>回答待ち</span><span><i class="l-none"></i>重ならない</span></div>
+        <div class="legend"><span><i class="l-all"></i>全員○あり</span><span><i class="l-tri"></i>△まで</span><span><i class="l-wait"></i>回答待ち</span><span><i class="l-none"></i>重ならない</span><span><i class="l-best"></i>一番人気</span></div>
       </div>
       <div class="card">
         <h2>○ △ × をつける</h2>
@@ -420,6 +423,8 @@
       var to = new Date(hi.getFullYear(), hi.getMonth(), hi.getDate() + (6 - hi.getDay()));
       var multi = lo.getMonth() !== hi.getMonth() || lo.getFullYear() !== hi.getFullYear();
       document.getElementById('calTitle').textContent = multi ? (lo.getMonth() + 1) + '月〜' + (hi.getMonth() + 1) + '月 · みんなの重なり' : (lo.getMonth() + 1) + '月 · みんなの重なり';
+      var maxOk = 0;
+      Object.keys(days).forEach(function (k) { if (days[k].ok > maxOk) maxOk = days[k].ok; });
       var today = dkey(new Date()), html = '', first = true;
       for (var c = new Date(from.getTime()); c <= to; c.setDate(c.getDate() + 1)) {
         var k = dkey(c), o = days[k], isToday = k === today;
@@ -429,7 +434,7 @@
         var numHtml = '<i class="cn' + (newMonth ? ' long' : '') + '">' + num + '</i>';
         if (o) {
           var st = o.all ? ['all', '全員○'] : o.wait ? ['wait', '○' + o.ok] : o.tri ? ['tri', '○' + o.ok] : ['none', '○' + o.ok];
-          html += '<a class="cd s-' + st[0] + (isToday ? ' today' : '') + '" href="#d-' + k + '" aria-label="' + (c.getMonth() + 1) + '月' + c.getDate() + '日(' + WD[c.getDay()] + ') ○' + o.ok + '人">' + numHtml + '<b class="cc">' + st[1] + '</b></a>';
+          html += '<a class="cd s-' + st[0] + (isToday ? ' today' : '') + (maxOk > 0 && o.ok === maxOk ? ' best' : '') + '" href="#d-' + k + '" aria-label="' + (c.getMonth() + 1) + '月' + c.getDate() + '日(' + WD[c.getDay()] + ') ○' + o.ok + '人">' + numHtml + '<b class="cc">' + st[1] + '</b></a>';
         } else {
           html += '<span class="cd' + (isToday ? ' today' : '') + '">' + numHtml + '<b class="cc"></b></span>';
         }
