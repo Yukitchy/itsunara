@@ -149,6 +149,15 @@
   .bar-n span { font-size:13px; font-weight:500; color:var(--slate); }
   .bar-l { font-size:12px; color:var(--slate); }
   .bar .btn { flex:1; width:auto; }
+  .decide-bar { position:fixed; left:0; right:0; bottom:0; z-index:20; background:var(--navy); color:#fff; padding:10px 16px calc(10px + env(safe-area-inset-bottom)); box-shadow:0 -6px 24px rgba(11,53,88,0.28); }
+  .decide-in { max-width:480px; margin:0 auto; display:flex; align-items:center; gap:10px; }
+  @media (min-width:768px) { .decide-in { max-width:640px; } }
+  .decide-l { flex:none; line-height:1.25; }
+  .decide-l b { display:block; font-size:14px; }
+  .decide-l span { font-size:11px; color:var(--mist); }
+  .decide-bar select { flex:1; min-width:0; height:44px; border:none; border-radius:10px; padding:0 10px; font-size:14px; font-weight:700; color:var(--navy); background:#fff; }
+  .decide-bar .btn { flex:none; width:auto; height:44px; padding:0 20px; background:var(--pop); }
+  @media (max-width:360px) { .decide-l span { display:none; } }
   .toast { z-index:20; position:fixed; left:50%; bottom:110px; transform:translateX(-50%); background:var(--navy); color:#fff; padding:10px 18px; border-radius:8px; font-size:14px; opacity:0; transition:opacity .2s; pointer-events:none; }
   .toast.show { opacity:1; }
 </style>
@@ -192,6 +201,10 @@
         <div class="names" id="who"></div>
       </div>
       <div class="banner" id="banner"></div>
+      <div class="banner hidden" id="submitErr" style="background:#fdecec;border:1px solid #e5484d;color:#b3261e;font-weight:700">
+        <span id="submitErrText">送信できませんでした。回答はまだ保存されていません。</span>
+        <button class="btn btn-sm" id="retryBtn" type="button" style="margin-left:10px">再送する</button>
+      </div>
       <div class="card hidden" id="calCard">
         <div class="cal-head"><h2 id="calTitle"></h2><span class="cal-hint">日付で一覧へ</span></div>
         <div class="cal-wd"><span>日</span><span>月</span><span>火</span><span>水</span><span>木</span><span>金</span><span>土</span></div>
@@ -225,6 +238,13 @@
     </div>
   </div>
 </div>
+<div id="decideBar" class="decide-bar hidden">
+    <div class="decide-in">
+      <div class="decide-l"><b>全員そろいました</b><span>日程を確定できます</span></div>
+      <select id="decideSel" aria-label="確定する枠"></select>
+      <button class="btn" id="decideBtn" type="button">確定</button>
+    </div>
+  </div>
 <div class="toast" id="toast"></div>
 
 <script src="./config.js?v=2"></script>
@@ -528,7 +548,7 @@
   function renderComplete(sum) {
     SUMMARY = sum || null;
     var box = document.getElementById('completeBox');
-    if (!SUMMARY || !SUMMARY.allAnswered || EVENT.status !== 'open') { box.classList.add('hidden'); return; }
+    if (!SUMMARY || !SUMMARY.allAnswered || EVENT.status !== 'open') { box.classList.add('hidden'); renderDecideBar(); return; }
     var html;
     if (SUMMARY.allOk.length) {
       html = SUMMARY.allOk.map(function (s) { return '<div class="ok-line">' + esc(s.label) + '</div>'; }).join('');
@@ -538,6 +558,7 @@
     }
     document.getElementById('completeBody').innerHTML = html;
     box.classList.remove('hidden');
+    renderDecideBar();
   }
 
   function joinLabels(arr) { return arr.map(function (s) { return s.label; }).join(' / '); }
@@ -552,6 +573,76 @@
     }
     lines.push(location.href);
     return lines.join('\n');
+  }
+
+  // 管理者（管理キーを持つ端末＝ユウキ本人）かどうか
+  function isAdmin() {
+    try { return !!localStorage.getItem('itsunara_key'); } catch (e) { return false; }
+  }
+
+  // 案3: 全員そろったら下部固定バーで確定できる（管理者のみ・受付中のみ）
+  function renderDecideBar() {
+    var bar = document.getElementById('decideBar');
+    if (!bar) return;
+    var voteBar = document.querySelector('#voteArea .bar');
+    var main = document.getElementById('main');
+    var show = isAdmin() && EVENT && EVENT.status === 'open' && SUMMARY && SUMMARY.allAnswered;
+    if (!show) {
+      bar.classList.add('hidden');
+      if (voteBar) voteBar.style.bottom = '';
+      if (main) main.style.paddingBottom = '';
+      return;
+    }
+    var okKeys = {};
+    (SUMMARY.allOk || []).forEach(function (s) { okKeys[s.key] = true; });
+    var ordered = (SUMMARY.allOk || []).concat(EVENT.slots.filter(function (s) { return !okKeys[s.key]; }));
+    var sel = document.getElementById('decideSel');
+    var cur = sel.value;
+    sel.innerHTML = '';
+    ordered.forEach(function (s) {
+      var o = document.createElement('option');
+      o.value = s.key;
+      o.textContent = s.label + (okKeys[s.key] ? '（全員○）' : '');
+      sel.appendChild(o);
+    });
+    if (cur) { for (var i = 0; i < sel.options.length; i++) { if (sel.options[i].value === cur) { sel.value = cur; break; } } }
+    bar.classList.remove('hidden');
+    var h = bar.offsetHeight;
+    if (voteBar) voteBar.style.bottom = h + 'px';
+    if (main) main.style.paddingBottom = h + 'px';
+  }
+
+  function decide() {
+    var btn = document.getElementById('decideBtn');
+    var sel = document.getElementById('decideSel');
+    if (!sel.value) return;
+    btn.disabled = true;
+    btn.textContent = '確定中';
+    post({ action: 'decide', id: EVENT.id, slotKey: sel.value })
+      .then(function (res) {
+        if (!res || !res.ok) {
+          btn.disabled = false;
+          btn.textContent = '確定';
+          toast((res && res.error) || '確定できませんでした');
+          return;
+        }
+        toast(res.lineSent ? '確定しました（LINEにも投稿しました）' : '確定しました');
+        fetchEvent(EVENT.id, 12000)
+          .then(function (res2) {
+            if (res2 && res2.ok && res2.event) {
+              EVENT = res2.event;
+              writeCache(EVENT.id, res2);
+              document.getElementById('voteArea').classList.add('hidden');
+              start(res2.votes || [], res2.summary);
+            } else { location.reload(); }
+          })
+          .catch(function () { location.reload(); });
+      })
+      .catch(function () {
+        btn.disabled = false;
+        btn.textContent = '確定';
+        toast('通信エラー');
+      });
   }
 
   function copyResult() {
@@ -598,19 +689,35 @@
     var btn = document.getElementById('saveBtn');
     btn.disabled = true;
     btn.textContent = '送信中';
-    post({ action: 'submit', id: EVENT.id, name: myName, marks: myMarks, comment: document.getElementById('comment').value })
+    var payload = { action: 'submit', id: EVENT.id, name: myName, marks: myMarks, comment: document.getElementById('comment').value };
+    var attempt = 0;
+    function tryPost() {
+      attempt++;
+      return post(payload).then(function (res) {
+        if (res && res.ok) return res;
+        throw new Error('submit failed');
+      }).catch(function (err) {
+        if (attempt >= 3) throw err;
+        return new Promise(function (resolve) { setTimeout(resolve, attempt * 1500); }).then(tryPost);
+      });
+    }
+    tryPost()
       .then(function (res) {
         btn.textContent = '送信する';
-        if (res && res.ok) { renderList(res.votes); renderComplete(res.summary); toast('送信しました'); }
-        else toast('送信できませんでした');
+        document.getElementById('submitErr').classList.add('hidden');
+        renderList(res.votes); renderComplete(res.summary); toast('送信しました');
         checkSave();
       })
       .catch(function () {
         btn.textContent = '送信する';
         btn.disabled = false;
-        toast('通信エラー');
+        document.getElementById('submitErr').classList.remove('hidden');
+        toast('送信できませんでした');
       });
   }
+
+  document.getElementById('retryBtn').addEventListener('click', function () { save(); });
+  document.getElementById('decideBtn').addEventListener('click', decide);
 
   function message(text) {
     hideSkeleton();
